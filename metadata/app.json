@@ -1,0 +1,23 @@
+{
+	"name": "recordings-community",
+	"i18n": {
+		"en-US": {
+			"label": "Recordings (Community)",
+			"description": "Manage call recordings"
+		}
+	},
+	"tags": [
+		"reseller"
+	],
+	"icon": "recordings.png",
+	"api_url": "",
+	"author": "Boden Garman",
+	"version": "1.0",
+	"license": "-",
+	"price": 0,
+	"urls": {
+		"documentation": "{documentation_url}",
+		"howto": "{howto_video_url}"
+	},
+	"pvt_type": "app"
+}

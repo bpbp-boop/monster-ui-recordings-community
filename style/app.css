@@ -1,0 +1,57 @@
+.recordings-container .filter-by-date .date-ranges>* {
+    margin: 0 10px 0 0;
+    vertical-align: middle;
+}
+
+.recordings-container .filter-by-date .date-ranges>span {
+    margin-right: 5px;
+}
+
+.recordings-container .filter-by-date .date-ranges input.date-filter {
+    height: 24px;
+    width: 90px;
+}
+
+.recordings-container .filter-by-date .date-ranges i.fa-calendar {
+    margin-left: -30px;
+    margin-right: 20px;
+}
+
+.recordings-container .filter-by-date {
+    line-height: 30px;
+    margin-left: 30px;
+}
+
+.recordings-container .filter-by-date .date-ranges input.date-filter {
+    height: 24px;
+    width: 90px;
+}
+
+/* .recordings-container .filter-by-date .date-ranges,
+.recordings-container .filter-by-date.active .expand-dates {
+    display: none;
+} */
+
+.recordings-container .filter-by-date.active .date-ranges {
+    display: block;
+}
+
+.recordings-container .loading-state {
+    display: none;
+    background: #fff none repeat scroll 0 0;
+    border: 1px dashed #aaa;
+    font-size: 60px;
+    padding: 50px;
+    text-align: center;
+    position: relative;
+    top: 50px;
+}
+
+.recordings-container .voicemails-table .select-line {
+    cursor: pointer;
+}
+
+.recordings-container .voicemails-table tr .bottom-line {
+    color: #707079;
+    font-size: 12px;
+}

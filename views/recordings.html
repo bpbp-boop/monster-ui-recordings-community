@@ -1,0 +1,44 @@
+<div class="recordings-container">
+    <div class="">
+        <div class="action-bar monster-table-header">
+            <div class="filter-by-date">
+            <div class="date-ranges">
+                <span>{{i18n.startDate}}</span>
+                <input id="startDate" type="text" class="date-filter filter-from">
+                <i class="fa fa-calendar"></i>
+                <span>{{i18n.endDate}}</span>
+                <input id="endDate" type="text" class="date-filter filter-to">
+                <i class="fa fa-calendar"></i>
+                <button type="button"
+                    class="apply-filter monster-button-neutral monster-button-fit">{{i18n.filter}}</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="data-state" style="display: block;">
+            <div class="voicemails-table">
+                <table class="monster-table footable" id="recordings-table">
+                    <thead>
+                        <tr>
+                            <th data-type="html">Direction</th>
+                            <th data-type="html">From</th>
+                            <th data-type="html">Target number</th>
+                            <th data-type="html" data-sorted="true">Start time</th>
+                            <th data-sorted="true">Duration</th>
+                            <th data-filterable="false" data-type="html" data-sortable="false"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="loading-state">
+            <i class="fa fa-spin fa-spinner monster-primary-color"></i>
+        </div>
+    </div>
+</div>
+</div>
