@@ -15,7 +15,7 @@ define(function (require) {
 
 		appFlags: {
 			recordings: {
-				maxRange: 365,
+				maxRange: 31,
 				defaultRange: 7,
 			}
 		},
@@ -278,10 +278,11 @@ define(function (require) {
 
 			monster.ui.footable(table, {
 				getData: function (filters, callback) {
-					filters = {
+					console.log(filters);
+					filters = $.extend(true, filters, {
 						created_from: monster.util.dateToBeginningOfGregorianDay(fromDate),
 						created_to: monster.util.dateToEndOfGregorianDay(toDate)
-					};
+					});
 
 					self.recordingGetRows(filters, function ($rows, data) {
 						callback && callback($rows, data);
@@ -294,20 +295,32 @@ define(function (require) {
 			});
 		},
 
-		recordingGetRows: function (filters, callback) {
+		recordingGetRows: function (filters, callback, startKey, continueData) {
 			var self = this;
+
+			continueData = continueData || [];
+
+			if (typeof startKey !== 'undefined') {
+				filters.startKey = startKey;
+			}
+
+			console.log(filters);
 
 			self.callApi({
 				resource: 'recordings.list',
 				data: {
 					accountId: self.accountId,
-					filters: {
-						created_from: filters.created_from,
-						created_to: filters.created_to,
-					}
+					filters: filters
 				},
 				success: function (response) {
-					var recordings = response.data;
+					var mergedData = $.merge(continueData, response.data);
+
+					if (response.next_start_key && startKey !== response.next_start_key) {
+						self.recordingGetRows(filters, callback, response.next_start_key, mergedData);
+						return;
+					}
+
+					var recordings = mergedData;
 					var formattedRecordings = self.formatRecordings(recordings)
 					$rows = $(self.getTemplate({
 						name: 'recordings-rows',
