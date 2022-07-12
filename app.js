@@ -16,7 +16,7 @@ define(function (require) {
 		appFlags: {
 			recordings: {
 				maxRange: 365,
-				defaultRange: 1,
+				defaultRange: 7,
 			}
 		},
 
@@ -229,12 +229,59 @@ define(function (require) {
 
 			monster.ui.chosen(template.find('.filter-direction'));
 			monster.ui.footable(template.find('.footable'));
-			monster.ui.footable(template.find('#recordings-table'), {
+
+			self.recordingsInitDatePicker(parent, template);
+
+			template.on('click', '.play-recording', function (e) {
+				var $row = $(this).parents('.recording-row'),
+					$activeRows = template.find('.recording-row.active');
+
+				if (!$row.hasClass('active') && $activeRows.length !== 0) {
+					return;
+				}
+
+				e.stopPropagation();
+
+				var mediaId = $row.data('recording-id');
+
+				template.find('table').addClass('highlighted');
+				$row.addClass('active');
+
+				self.playRecording(template, mediaId);
+			});
+
+			parent
+				.fadeOut(function () {
+					$(this)
+						.empty()
+						.append(template)
+						.fadeIn();
+
+					self.displayRecordings(parent);
+				});
+		},
+
+		displayRecordings: function (container) {
+			var self = this;
+
+			var fromDate = $('#startDate').datepicker('getDate');
+			var toDate = $('#endDate').datepicker('getDate');
+
+			// on first load the datepicker doesn't work. use defaults.
+			if (fromDate instanceof Date === false) {
+				var dates = monster.util.getDefaultRangeDates(self.appFlags.recordings.defaultRange),
+				fromDate = dates.from,
+				toDate = dates.to;
+			}
+
+			var table = container.find('#recordings-table');
+
+			monster.ui.footable(table, {
 				getData: function (filters, callback) {
-					// filters = $.extend(true, filters, {
-					// 	created_from: monster.util.dateToBeginningOfGregorianDay(fromDate),
-					// 	created_to: monster.util.dateToEndOfGregorianDay(toDate)
-					// });
+					filters = {
+						created_from: monster.util.dateToBeginningOfGregorianDay(fromDate),
+						created_to: monster.util.dateToEndOfGregorianDay(toDate)
+					};
 
 					self.recordingGetRows(filters, function ($rows, data) {
 						callback && callback($rows, data);
@@ -245,16 +292,6 @@ define(function (require) {
 					enabled: true,
 				}
 			});
-
-			self.recordingsInitDatePicker(parent, template);
-
-			parent
-				.fadeOut(function () {
-					$(this)
-						.empty()
-						.append(template)
-						.fadeIn();
-				});
 		},
 
 		recordingGetRows: function (filters, callback) {
@@ -264,6 +301,10 @@ define(function (require) {
 				resource: 'recordings.list',
 				data: {
 					accountId: self.accountId,
+					filters: {
+						created_from: filters.created_from,
+						created_to: filters.created_to,
+					}
 				},
 				success: function (response) {
 					var recordings = response.data;
@@ -271,18 +312,18 @@ define(function (require) {
 					$rows = $(self.getTemplate({
 						name: 'recordings-rows',
 						data: {
-							recordings: formattedRecordings
+							recordings: formattedRecordings,
 						}
 					}));
-
-					console.log('here');
 
 					callback && callback($rows, recordings);
 				},
 			})
 		},
 
-		formatRecordings: function(recordings) {
+		formatRecordings: function (recordings) {
+			var self = this;
+
 			var formattedData = recordings.map(recording => ({
 				call_id: recording.call_id,
 				media_id: recording.custom_channel_vars['Media-Recording-ID'],
@@ -294,6 +335,7 @@ define(function (require) {
 				datetime: monster.util.toFriendlyDate(recording.start),
 				timestamp: recording.start,
 				duration: monster.util.friendlyTimer(recording.duration),
+				uri: `${self.apiUrl}accounts/${self.accountId}/recordings/${recording.custom_channel_vars['Media-Recording-ID']}?accept=audio/mpeg&auth_token=${self.getAuthToken()}`,
 			}));
 
 			return formattedData;
@@ -316,9 +358,7 @@ define(function (require) {
 			template.find('#endDate').datepicker('setDate', toDate);
 
 			template.find('.apply-filter').on('click', function (e) {
-				var vmboxId = template.find('#select_vmbox').val();
-
-				self.displayVMList(parent, vmboxId);
+				self.displayRecordings(parent);
 			});
 
 			template.find('.toggle-filter').on('click', function () {
@@ -326,8 +366,55 @@ define(function (require) {
 			});
 		},
 
+		playRecording: function (template, mediaId) {
+			var self = this,
+				$row = template.find('.recording-row[data-recording-id="' + mediaId + '"]');
 
+			template.find('table').addClass('highlighted');
+			$row.addClass('active');
+
+			$row.find('.duration, .actions').hide();
+
+			var uri = `${self.apiUrl}accounts/${self.accountId}/recordings/${mediaId}?accept=audio/mpeg&auth_token=${self.getAuthToken()}`;
+
+			templateCell = $(self.getTemplate({
+				name: 'cell-recording-player',
+				data: {
+					uri: uri
+				}
+			}));
+
+			$row.append(templateCell);
+
+			var closePlayerOnClickOutside = function (e) {
+				if ($(e.target).closest('.recording-player').length) {
+					return;
+				}
+				e.stopPropagation();
+				closePlayer();
+			},
+				closePlayer = function () {
+					$(document).off('click', closePlayerOnClickOutside);
+					self.removeOpacityLayer(template, $row);
+				};
+
+			$(document).on('click', closePlayerOnClickOutside);
+
+			templateCell.find('.close-player').on('click', closePlayer);
+
+			// Autoplay in JS. For some reason in HTML, we can't pause the stream properly for the first play.
+			templateCell.find('audio').get(0).play();
+		},
+
+		removeOpacityLayer: function (template, $activeRows) {
+			$activeRows.find('.recording-player').remove();
+			$activeRows.find('.duration, .actions').show();
+			$activeRows.removeClass('active');
+			template.find('table').removeClass('highlighted');
+		},
 	};
+
+
 
 	return app;
 });

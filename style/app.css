@@ -47,11 +47,44 @@
     top: 50px;
 }
 
-.recordings-container .voicemails-table .select-line {
+.recordings-container .recordings-table .select-line {
     cursor: pointer;
 }
 
-.recordings-container .voicemails-table tr .bottom-line {
+.recordings-container .recordings-table tr .bottom-line {
     color: #707079;
     font-size: 12px;
+}
+
+.recordings-container .recordings-table table.highlighted tbody tr {
+    opacity: 0.3;
+}
+
+.recordings-container .recordings-table table.highlighted tbody tr.active {
+    opacity: 1;
+}
+
+/* Recordings Player */
+.recordings-container .recordings-table .recording-player {
+    display: table-cell;
+    width: 175px;
+}
+
+.recordings-container .recordings-table .close-player {
+    cursor: pointer;
+}
+
+.recordings-container .recordings-table .recording-player audio {
+    width: 170px;
+    float: right;
+}
+
+.recordings-container .recordings-table .recording-player .close-player {
+    border: 1px solid #aaa;
+    border-radius: 0 4px 4px 0;
+    color: #888;
+    float: right;
+    font-weight: bold;
+    margin: 0;
+    padding: 3px 12px;
 }

@@ -1,21 +1,19 @@
 {{#each recordings}}
-<tr data-call-id="{{call_id}}" data-media-id="{{media_id}}">
+<tr class="recording-row" data-call-id="{{call_id}}" data-recording-id="{{media_id}}">
     <td>{{direction}}</td>
     <td>{{caller_id_name}}</td>
     <td>{{callee_id_name}} - {{callee_id_number}}</td>
-    <!-- <td>{{datetime}}</td> -->
     <td class="select-line no-padding" data-filter-value="{{timestamp}} {{toFriendlyDate timestamp}}"
         data-sort-value="{{timestamp}}">
         <div class="top-line">{{toFriendlyDate timestamp 'date'}}</div>
         <div class="bottom-line">{{toFriendlyDate timestamp 'time'}}</div>
     </td>
-    <td>{{duration}}</td>
+    <td class="duration">{{duration}}</td>
     <td class="actions">
         <i class="fa fa-play-circle action-item play-recording"></i>
         <a class="action-item" href="{{uri}}" target="_blank">
             <i class="fa fa-download download-recording"></i>
         </a>
-        <i class="fa fa-list action-item details-recording"></i>
     </td>
 </tr>
 {{/each}}
