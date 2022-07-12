@@ -340,7 +340,7 @@ define(function (require) {
 			var formattedData = recordings.map(recording => ({
 				call_id: recording.call_id,
 				media_id: recording.custom_channel_vars['Media-Recording-ID'],
-				direction: recording.direction,
+				direction: recording.origin.split(' ')[0],
 				caller_id_name: recording.caller_id_name,
 				caller_id_number: recording.caller_id_name,
 				callee_id_name: recording.callee_id_name,
