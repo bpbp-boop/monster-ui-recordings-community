@@ -301,7 +301,7 @@ define(function (require) {
 			continueData = continueData || [];
 
 			if (typeof startKey !== 'undefined') {
-				filters.startKey = startKey;
+				filters.start_key = startKey;
 			}
 
 			console.log(filters);
