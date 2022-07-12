@@ -1,8 +1,19 @@
 {{#each recordings}}
 <tr class="recording-row" data-call-id="{{call_id}}" data-recording-id="{{media_id}}">
-    <td>{{direction}}</td>
+    <td>
+        {{#compare direction "===" "outbound"}}
+        {{telicon "phone-outbound"}} Outbound
+        {{else}}
+        {{telicon "phone-inbound"}} Inbound
+        {{/compare}}
+    </td>
     <td>{{caller_id_name}}</td>
-    <td>{{callee_id_name}} - {{callee_id_number}}</td>
+    <td>
+        <div class="top-line">{{#monsterNumberWrapper callee_id_number}}{{/monsterNumberWrapper}}</div>
+        {{#if callee_id_name}}
+        <div class="bottom-line">{{callee_id_name}}</div>
+        {{/if}}
+    </td>
     <td class="select-line no-padding" data-filter-value="{{timestamp}} {{toFriendlyDate timestamp}}"
         data-sort-value="{{timestamp}}">
         <div class="top-line">{{toFriendlyDate timestamp 'date'}}</div>
