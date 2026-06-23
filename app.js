@@ -274,6 +274,8 @@ define(function (require) {
 							.empty()
 							.append(template)
 							.fadeIn();
+
+						monster.ui.footable(template.find('.footable'));
 					});
 			});
 		},
