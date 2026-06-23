@@ -230,7 +230,7 @@ define(function (require) {
 				args = pArgs || {},
 				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
 
-			self.getUsers(function (users) {
+			self.getUsersWithRecording(function (users) {
 				var template = $(self.getTemplate({
 					name: 'settings-users',
 					data: {
@@ -238,10 +238,34 @@ define(function (require) {
 					}
 				}));
 
-				template.on('click', '.edit-user', function () {
-					var userId = $(this).parents('.user-row').data('user-id');
+				// each toggle saves the whole call_recording object for its
+				// user on change (no separate save button)
+				template.on('change', '.recording-toggle', function () {
+					var $row = $(this).closest('.user-row'),
+						userId = $row.data('user-id'),
+						readToggle = function (type) {
+							return $row.find('.recording-toggle[data-type="' + type + '"]').prop('checked');
+						};
 
-					self.editUserSettings(userId);
+					var settings = {
+						"call_recording": {
+							"inbound": {
+								"offnet": { "enabled": readToggle('inbound-offnet') },
+								"onnet": { "enabled": readToggle('inbound-onnet') }
+							},
+							"outbound": {
+								"offnet": { "enabled": readToggle('outbound-offnet') },
+								"onnet": { "enabled": readToggle('outbound-onnet') }
+							}
+						}
+					};
+
+					self.updateUser(userId, settings, function () {
+						monster.ui.toast({
+							type: 'success',
+							message: 'Call recording settings saved!'
+						});
+					});
 				});
 
 				parent
@@ -254,78 +278,66 @@ define(function (require) {
 			});
 		},
 
-		editUserSettings: function (userId) {
-			var self = this;
-
-			self.getUser(userId, function (user) {
+		formatUsers: function (users) {
+			var formattedUsers = users.map(function (user) {
 				// user docs store the call_recording flags directly (no
 				// perspective wrapper); the account doc's "endpoint" key is the
 				// default endpoints inherit, not a user's own override
-				var recording = user?.call_recording || {};
+				var recording = user.call_recording || {},
+					name = ((user.first_name || '') + ' ' + (user.last_name || '')).trim() || user.username;
 
-				var template = $(self.getTemplate({
-					name: 'settings-user',
-					data: {
-						name: monster.util.getUserFullName(user),
-						inbound_external_enabled: recording?.inbound?.offnet?.enabled,
-						outbound_external_enabled: recording?.outbound?.offnet?.enabled,
-						inbound_internal_enabled: recording?.inbound?.onnet?.enabled,
-						outbound_internal_enabled: recording?.outbound?.onnet?.enabled,
-					}
-				}));
-
-				var dialog = monster.ui.dialog(template, {
-					title: 'Call Recording'
-				});
-
-				template.find('.save').on('click', function () {
-					var formData = monster.ui.getFormData('user-settings');
-
-					var settings = {
-						"call_recording": {
-							"inbound": {
-								"offnet": {
-									"enabled": formData['inbound-offnet'],
-								},
-								"onnet": {
-									"enabled": formData['inbound-onnet'],
-								}
-							},
-							"outbound": {
-								"offnet": {
-									"enabled": formData['outbound-offnet'],
-								},
-								"onnet": {
-									"enabled": formData['outbound-onnet'],
-								}
-							}
-						}
-					};
-
-					self.updateUser(userId, settings, function () {
-						dialog.dialog('close');
-
-						monster.ui.toast({
-							type: 'success',
-							message: 'User call recording settings saved!',
-						});
-					});
-				});
+				return {
+					id: user.id,
+					name: name,
+					username: user.username,
+					inbound_external_enabled: recording?.inbound?.offnet?.enabled,
+					outbound_external_enabled: recording?.outbound?.offnet?.enabled,
+					inbound_internal_enabled: recording?.inbound?.onnet?.enabled,
+					outbound_internal_enabled: recording?.outbound?.onnet?.enabled,
+				};
 			});
-		},
-
-		formatUsers: function (users) {
-			var formattedUsers = users.map(user => ({
-				id: user.id,
-				name: monster.util.getUserFullName(user),
-				username: user.username,
-			}));
 
 			formattedUsers.sort(function (a, b) {
 				return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 			});
 
 			return formattedUsers;
+		},
+
+		// the user.list summary doesn't include call_recording, so fetch each
+		// full user doc to know the current per-user settings
+		getUsersWithRecording: function (callback) {
+			var self = this;
+
+			self.getUsers(function (users) {
+				var requests = {};
+
+				_.each(users, function (user) {
+					requests[user.id] = function (cb) {
+						self.callApi({
+							resource: 'user.get',
+							data: {
+								accountId: self.accountId,
+								userId: user.id
+							},
+							success: function (response) {
+								cb(null, response.data);
+							},
+							error: function () {
+								cb(null, null);
+							}
+						});
+					};
+				});
+
+				monster.parallel(requests, function (err, results) {
+					var fullUsers = _.filter(_.values(results), function (user) {
+						return user !== null;
+					});
+
+					callback && callback(fullUsers);
+				});
+			});
 		},
 
 		getUsers: function (callback) {
@@ -341,24 +353,6 @@ define(function (require) {
 				},
 				error: function (response) {
 					monster.ui.alert('error', 'Issue getting users');
-				}
-			});
-		},
-
-		getUser: function (userId, callback) {
-			var self = this;
-
-			self.callApi({
-				resource: 'user.get',
-				data: {
-					accountId: self.accountId,
-					userId: userId
-				},
-				success: function (response) {
-					callback && callback(response.data);
-				},
-				error: function (response) {
-					monster.ui.alert('error', 'Issue getting user');
 				}
 			});
 		},
