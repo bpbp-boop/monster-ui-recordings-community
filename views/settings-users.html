@@ -1,0 +1,24 @@
+<div id="content-wrapper" class="recordings-container">
+	<div class="content">
+		<table class="monster-table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Username</th>
+					<th data-sortable="false"></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each users}}
+				<tr class="user-row" data-user-id="{{id}}">
+					<td>{{name}}</td>
+					<td>{{username}}</td>
+					<td class="actions">
+						<button type="button" class="monster-button-neutral monster-button-fit edit-user">Edit</button>
+					</td>
+				</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+</div>
