@@ -39,6 +39,10 @@ define(function (require) {
 			'recordings-community.user.update': {
 				'url': 'accounts/{accountId}/users/{userId}',
 				'verb': 'PATCH'
+			},
+			'recordings-community.device.update': {
+				'url': 'accounts/{accountId}/devices/{deviceId}',
+				'verb': 'PATCH'
 			}
 		},
 
@@ -91,7 +95,7 @@ define(function (require) {
 										},
 										{
 											text: 'Devices',
-											callback: function () { }
+											callback: self.renderDeviceSettings
 										},
 									],
 								}]
@@ -374,6 +378,157 @@ define(function (require) {
 				},
 				error: function (response) {
 					monster.ui.alert('error', 'Issue updating user');
+				}
+			});
+		},
+
+		renderDeviceSettings: function (pArgs) {
+			var self = this,
+				args = pArgs || {},
+				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+
+			self.getDevicesWithRecording(function (devices) {
+				var template = $(self.getTemplate({
+					name: 'settings-devices',
+					data: {
+						devices: self.formatDevices(devices)
+					}
+				}));
+
+				// each toggle saves the whole call_recording object for its
+				// device on change (no separate save button)
+				template.on('change', '.recording-toggle', function () {
+					var $row = $(this).closest('.device-row'),
+						deviceId = $row.data('device-id'),
+						readToggle = function (type) {
+							return $row.find('.recording-toggle[data-type="' + type + '"]').prop('checked');
+						};
+
+					var settings = {
+						"call_recording": {
+							"inbound": {
+								"offnet": { "enabled": readToggle('inbound-offnet') },
+								"onnet": { "enabled": readToggle('inbound-onnet') }
+							},
+							"outbound": {
+								"offnet": { "enabled": readToggle('outbound-offnet') },
+								"onnet": { "enabled": readToggle('outbound-onnet') }
+							}
+						}
+					};
+
+					self.updateDevice(deviceId, settings, function () {
+						monster.ui.toast({
+							type: 'success',
+							message: 'Call recording settings saved!'
+						});
+					});
+				});
+
+				parent
+					.fadeOut(function () {
+						$(this)
+							.empty()
+							.append(template)
+							.fadeIn();
+
+						monster.ui.footable(template.find('.footable'));
+					});
+			});
+		},
+
+		formatDevices: function (devices) {
+			var formattedDevices = devices.map(function (device) {
+				// device docs store the call_recording flags directly, the same
+				// way user docs do (endpoint docs have no perspective wrapper)
+				var recording = device.call_recording || {};
+
+				return {
+					id: device.id,
+					name: device.name,
+					device_type: device.device_type,
+					inbound_external_enabled: recording?.inbound?.offnet?.enabled,
+					outbound_external_enabled: recording?.outbound?.offnet?.enabled,
+					inbound_internal_enabled: recording?.inbound?.onnet?.enabled,
+					outbound_internal_enabled: recording?.outbound?.onnet?.enabled,
+				};
+			});
+
+			formattedDevices.sort(function (a, b) {
+				return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+			});
+
+			return formattedDevices;
+		},
+
+		// the device.list summary doesn't include call_recording, so fetch each
+		// full device doc to know the current per-device settings
+		getDevicesWithRecording: function (callback) {
+			var self = this;
+
+			self.getDevices(function (devices) {
+				var requests = {};
+
+				_.each(devices, function (device) {
+					requests[device.id] = function (cb) {
+						self.callApi({
+							resource: 'device.get',
+							data: {
+								accountId: self.accountId,
+								deviceId: device.id
+							},
+							success: function (response) {
+								cb(null, response.data);
+							},
+							error: function () {
+								cb(null, null);
+							}
+						});
+					};
+				});
+
+				monster.parallel(requests, function (err, results) {
+					var fullDevices = _.filter(_.values(results), function (device) {
+						return device !== null;
+					});
+
+					callback && callback(fullDevices);
+				});
+			});
+		},
+
+		getDevices: function (callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'device.list',
+				data: {
+					accountId: self.accountId
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue getting devices');
+				}
+			});
+		},
+
+		updateDevice: function (deviceId, settings, callback) {
+			var self = this;
+
+			monster.request({
+				resource: 'recordings-community.device.update',
+				data: {
+					accountId: self.accountId,
+					deviceId: deviceId,
+					data: settings,
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue updating device');
 				}
 			});
 		},

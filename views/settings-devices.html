@@ -1,0 +1,44 @@
+<div id="content-wrapper" class="recordings-container">
+	<div class="content">
+		<table class="monster-table footable settings-devices-table" id="settings-devices-table">
+			<thead>
+				<tr>
+					<th data-type="html" data-sorted="true">Name</th>
+					<th data-type="html">Type</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Inbound External</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Outbound External</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Inbound Internal</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Outbound Internal</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each devices}}
+				<tr class="device-row" data-device-id="{{id}}">
+					<td>{{name}}</td>
+					<td>{{device_type}}</td>
+					<td>
+						{{#monsterSwitch}}
+						<input class="recording-toggle" data-type="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}} />
+						{{/monsterSwitch}}
+					</td>
+					<td>
+						{{#monsterSwitch}}
+						<input class="recording-toggle" data-type="outbound-offnet" type="checkbox" {{#if outbound_external_enabled}}checked{{/if}} />
+						{{/monsterSwitch}}
+					</td>
+					<td>
+						{{#monsterSwitch}}
+						<input class="recording-toggle" data-type="inbound-onnet" type="checkbox" {{#if inbound_internal_enabled}}checked{{/if}} />
+						{{/monsterSwitch}}
+					</td>
+					<td>
+						{{#monsterSwitch}}
+						<input class="recording-toggle" data-type="outbound-onnet" type="checkbox" {{#if outbound_internal_enabled}}checked{{/if}} />
+						{{/monsterSwitch}}
+					</td>
+				</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+</div>
