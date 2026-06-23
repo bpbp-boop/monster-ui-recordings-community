@@ -34,6 +34,11 @@ define(function (require) {
 			'recordings-community.recordings.delete': {
 				'url': 'accounts/{accountId}/recordings/{recordingId}',
 				'verb': 'DELETE'
+			},
+			// there is no PATCH method included in the default sdk
+			'recordings-community.user.update': {
+				'url': 'accounts/{accountId}/users/{userId}',
+				'verb': 'PATCH'
 			}
 		},
 
@@ -82,7 +87,7 @@ define(function (require) {
 										},
 										{
 											text: 'Users',
-											callback: function () { }
+											callback: self.renderUserSettings
 										},
 										{
 											text: 'Devices',
@@ -216,6 +221,163 @@ define(function (require) {
 				},
 				error: function (response) {
 					monster.ui.alert('Issue getting account data'.response);
+				}
+			});
+		},
+
+		renderUserSettings: function (pArgs) {
+			var self = this,
+				args = pArgs || {},
+				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+
+			self.getUsers(function (users) {
+				var template = $(self.getTemplate({
+					name: 'settings-users',
+					data: {
+						users: self.formatUsers(users)
+					}
+				}));
+
+				template.on('click', '.edit-user', function () {
+					var userId = $(this).parents('.user-row').data('user-id');
+
+					self.editUserSettings(userId);
+				});
+
+				parent
+					.fadeOut(function () {
+						$(this)
+							.empty()
+							.append(template)
+							.fadeIn();
+					});
+			});
+		},
+
+		editUserSettings: function (userId) {
+			var self = this;
+
+			self.getUser(userId, function (user) {
+				// user docs store the call_recording flags directly (no
+				// perspective wrapper); the account doc's "endpoint" key is the
+				// default endpoints inherit, not a user's own override
+				var recording = user?.call_recording || {};
+
+				var template = $(self.getTemplate({
+					name: 'settings-user',
+					data: {
+						name: monster.util.getUserFullName(user),
+						inbound_external_enabled: recording?.inbound?.offnet?.enabled,
+						outbound_external_enabled: recording?.outbound?.offnet?.enabled,
+						inbound_internal_enabled: recording?.inbound?.onnet?.enabled,
+						outbound_internal_enabled: recording?.outbound?.onnet?.enabled,
+					}
+				}));
+
+				var dialog = monster.ui.dialog(template, {
+					title: 'Call Recording'
+				});
+
+				template.find('.save').on('click', function () {
+					var formData = monster.ui.getFormData('user-settings');
+
+					var settings = {
+						"call_recording": {
+							"inbound": {
+								"offnet": {
+									"enabled": formData['inbound-offnet'],
+								},
+								"onnet": {
+									"enabled": formData['inbound-onnet'],
+								}
+							},
+							"outbound": {
+								"offnet": {
+									"enabled": formData['outbound-offnet'],
+								},
+								"onnet": {
+									"enabled": formData['outbound-onnet'],
+								}
+							}
+						}
+					};
+
+					self.updateUser(userId, settings, function () {
+						dialog.dialog('close');
+
+						monster.ui.toast({
+							type: 'success',
+							message: 'User call recording settings saved!',
+						});
+					});
+				});
+			});
+		},
+
+		formatUsers: function (users) {
+			var formattedUsers = users.map(user => ({
+				id: user.id,
+				name: monster.util.getUserFullName(user),
+				username: user.username,
+			}));
+
+			formattedUsers.sort(function (a, b) {
+				return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+			});
+
+			return formattedUsers;
+		},
+
+		getUsers: function (callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'user.list',
+				data: {
+					accountId: self.accountId
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue getting users');
+				}
+			});
+		},
+
+		getUser: function (userId, callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'user.get',
+				data: {
+					accountId: self.accountId,
+					userId: userId
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue getting user');
+				}
+			});
+		},
+
+		updateUser: function (userId, settings, callback) {
+			var self = this;
+
+			monster.request({
+				resource: 'recordings-community.user.update',
+				data: {
+					accountId: self.accountId,
+					userId: userId,
+					data: settings,
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue updating user');
 				}
 			});
 		},
