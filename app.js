@@ -30,6 +30,10 @@ define(function (require) {
 			'recordings-community.account.update': {
 				'url': 'accounts/{accountId}/',
 				'verb': 'PATCH'
+			},
+			'recordings-community.recordings.delete': {
+				'url': 'accounts/{accountId}/recordings/{recordingId}',
+				'verb': 'DELETE'
 			}
 		},
 
@@ -250,6 +254,24 @@ define(function (require) {
 				self.playRecording(template, mediaId);
 			});
 
+			template.on('click', '.delete-recording', function (e) {
+				e.stopPropagation();
+
+				var $row = $(this).parents('.recording-row'),
+					mediaId = $row.data('recording-id');
+
+				monster.ui.confirm('Are you sure you want to delete this recording?', function () {
+					self.deleteRecording(mediaId, function () {
+						$row.remove();
+
+						monster.ui.toast({
+							type: 'success',
+							message: 'Recording deleted!'
+						});
+					});
+				});
+			});
+
 			parent
 				.fadeOut(function () {
 					$(this)
@@ -332,6 +354,24 @@ define(function (require) {
 					callback && callback($rows, recordings);
 				},
 			})
+		},
+
+		deleteRecording: function (recordingId, callback) {
+			var self = this;
+
+			monster.request({
+				resource: 'recordings-community.recordings.delete',
+				data: {
+					accountId: self.accountId,
+					recordingId: recordingId
+				},
+				success: function (response) {
+					callback && callback(response.data);
+				},
+				error: function (response) {
+					monster.ui.alert('error', 'Issue deleting recording');
+				}
+			});
 		},
 
 		formatRecordings: function (recordings) {
