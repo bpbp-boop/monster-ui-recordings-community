@@ -39,6 +39,10 @@ define(function (require) {
 			'recordings-community.user.update': {
 				'url': 'accounts/{accountId}/users/{userId}',
 				'verb': 'PATCH'
+			},
+			'recordings-community.device.update': {
+				'url': 'accounts/{accountId}/devices/{deviceId}',
+				'verb': 'PATCH'
 			}
 		},
 
@@ -91,7 +95,7 @@ define(function (require) {
 										},
 										{
 											text: 'Devices',
-											callback: function () { }
+											callback: self.renderDeviceSettings
 										},
 									],
 								}]
@@ -226,25 +230,69 @@ define(function (require) {
 		},
 
 		renderUserSettings: function (pArgs) {
+			this.renderEndpointSettings('user', pArgs);
+		},
+
+		renderDeviceSettings: function (pArgs) {
+			this.renderEndpointSettings('device', pArgs);
+		},
+
+		// per-type config for the call recording settings tabs; user and device
+		// docs share the same call_recording shape (no perspective wrapper), so
+		// they only differ by resources, id key and the displayed columns
+		recordingEndpoints: {
+			user: {
+				label: 'user',
+				secondaryLabel: 'Username',
+				listResource: 'user.list',
+				getResource: 'user.get',
+				updateRequest: 'recordings-community.user.update',
+				idKey: 'userId',
+				getFields: function (doc) {
+					return {
+						name: ((doc.first_name || '') + ' ' + (doc.last_name || '')).trim() || doc.username,
+						secondary: doc.username
+					};
+				}
+			},
+			device: {
+				label: 'device',
+				secondaryLabel: 'Type',
+				listResource: 'device.list',
+				getResource: 'device.get',
+				updateRequest: 'recordings-community.device.update',
+				idKey: 'deviceId',
+				getFields: function (doc) {
+					return {
+						name: doc.name,
+						secondary: doc.device_type
+					};
+				}
+			}
+		},
+
+		renderEndpointSettings: function (type, pArgs) {
 			var self = this,
+				config = self.recordingEndpoints[type],
 				args = pArgs || {},
 				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
 
-			self.getUsersWithRecording(function (users) {
+			self.getEndpointsWithRecording(type, function (endpoints) {
 				var template = $(self.getTemplate({
-					name: 'settings-users',
+					name: 'settings-recording',
 					data: {
-						users: self.formatUsers(users)
+						secondaryLabel: config.secondaryLabel,
+						endpoints: self.formatEndpoints(type, endpoints)
 					}
 				}));
 
 				// each toggle saves the whole call_recording object for its
-				// user on change (no separate save button)
+				// endpoint on change (no separate save button)
 				template.on('change', '.recording-toggle', function () {
-					var $row = $(this).closest('.user-row'),
-						userId = $row.data('user-id'),
-						readToggle = function (type) {
-							return $row.find('.recording-toggle[data-type="' + type + '"]').prop('checked');
+					var $row = $(this).closest('.endpoint-row'),
+						endpointId = $row.data('endpoint-id'),
+						readToggle = function (toggle) {
+							return $row.find('.recording-toggle[data-type="' + toggle + '"]').prop('checked');
 						};
 
 					var settings = {
@@ -260,7 +308,7 @@ define(function (require) {
 						}
 					};
 
-					self.updateUser(userId, settings, function () {
+					self.updateEndpoint(type, endpointId, settings, function () {
 						monster.ui.toast({
 							type: 'success',
 							message: 'Call recording settings saved!'
@@ -274,22 +322,25 @@ define(function (require) {
 							.empty()
 							.append(template)
 							.fadeIn();
+
+						monster.ui.footable(template.find('.footable'));
 					});
 			});
 		},
 
-		formatUsers: function (users) {
-			var formattedUsers = users.map(function (user) {
-				// user docs store the call_recording flags directly (no
-				// perspective wrapper); the account doc's "endpoint" key is the
-				// default endpoints inherit, not a user's own override
-				var recording = user.call_recording || {},
-					name = ((user.first_name || '') + ' ' + (user.last_name || '')).trim() || user.username;
+		formatEndpoints: function (type, endpoints) {
+			var config = this.recordingEndpoints[type];
+
+			var formattedEndpoints = endpoints.map(function (doc) {
+				// endpoint docs (user/device) store the call_recording flags
+				// directly, with no perspective wrapper (unlike the account doc)
+				var recording = doc.call_recording || {},
+					fields = config.getFields(doc);
 
 				return {
-					id: user.id,
-					name: name,
-					username: user.username,
+					id: doc.id,
+					name: fields.name,
+					secondary: fields.secondary,
 					inbound_external_enabled: recording?.inbound?.offnet?.enabled,
 					outbound_external_enabled: recording?.outbound?.offnet?.enabled,
 					inbound_internal_enabled: recording?.inbound?.onnet?.enabled,
@@ -297,29 +348,30 @@ define(function (require) {
 				};
 			});
 
-			formattedUsers.sort(function (a, b) {
-				return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+			formattedEndpoints.sort(function (a, b) {
+				return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
 			});
 
-			return formattedUsers;
+			return formattedEndpoints;
 		},
 
-		// the user.list summary doesn't include call_recording, so fetch each
-		// full user doc to know the current per-user settings
-		getUsersWithRecording: function (callback) {
-			var self = this;
+		// the list summary doesn't include call_recording, so fetch each full
+		// doc to know the current per-endpoint settings
+		getEndpointsWithRecording: function (type, callback) {
+			var self = this,
+				config = self.recordingEndpoints[type];
 
-			self.getUsers(function (users) {
+			self.getEndpoints(type, function (endpoints) {
 				var requests = {};
 
-				_.each(users, function (user) {
-					requests[user.id] = function (cb) {
+				_.each(endpoints, function (endpoint) {
+					requests[endpoint.id] = function (cb) {
+						var data = { accountId: self.accountId };
+						data[config.idKey] = endpoint.id;
+
 						self.callApi({
-							resource: 'user.get',
-							data: {
-								accountId: self.accountId,
-								userId: user.id
-							},
+							resource: config.getResource,
+							data: data,
 							success: function (response) {
 								cb(null, response.data);
 							},
@@ -331,20 +383,21 @@ define(function (require) {
 				});
 
 				monster.parallel(requests, function (err, results) {
-					var fullUsers = _.filter(_.values(results), function (user) {
-						return user !== null;
+					var fullEndpoints = _.filter(_.values(results), function (doc) {
+						return doc !== null;
 					});
 
-					callback && callback(fullUsers);
+					callback && callback(fullEndpoints);
 				});
 			});
 		},
 
-		getUsers: function (callback) {
-			var self = this;
+		getEndpoints: function (type, callback) {
+			var self = this,
+				config = self.recordingEndpoints[type];
 
 			self.callApi({
-				resource: 'user.list',
+				resource: config.listResource,
 				data: {
 					accountId: self.accountId
 				},
@@ -352,26 +405,26 @@ define(function (require) {
 					callback && callback(response.data);
 				},
 				error: function (response) {
-					monster.ui.alert('error', 'Issue getting users');
+					monster.ui.alert('error', 'Issue getting ' + config.label + 's');
 				}
 			});
 		},
 
-		updateUser: function (userId, settings, callback) {
-			var self = this;
+		updateEndpoint: function (type, endpointId, settings, callback) {
+			var self = this,
+				config = self.recordingEndpoints[type],
+				data = { accountId: self.accountId, data: settings };
+
+			data[config.idKey] = endpointId;
 
 			monster.request({
-				resource: 'recordings-community.user.update',
-				data: {
-					accountId: self.accountId,
-					userId: userId,
-					data: settings,
-				},
+				resource: config.updateRequest,
+				data: data,
 				success: function (response) {
 					callback && callback(response.data);
 				},
 				error: function (response) {
-					monster.ui.alert('error', 'Issue updating user');
+					monster.ui.alert('error', 'Issue updating ' + config.label);
 				}
 			});
 		},

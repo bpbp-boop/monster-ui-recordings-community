@@ -1,21 +1,21 @@
 <div id="content-wrapper" class="recordings-container">
 	<div class="content">
-		<table class="monster-table settings-users-table">
+		<table class="monster-table footable settings-recording-table" id="settings-recording-table">
 			<thead>
 				<tr>
-					<th>Name</th>
-					<th>Username</th>
-					<th>Inbound External</th>
-					<th>Outbound External</th>
-					<th>Inbound Internal</th>
-					<th>Outbound Internal</th>
+					<th data-type="html" data-sorted="true">Name</th>
+					<th data-type="html">{{secondaryLabel}}</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Inbound External</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Outbound External</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Inbound Internal</th>
+					<th data-type="html" data-sortable="false" data-filterable="false">Outbound Internal</th>
 				</tr>
 			</thead>
 			<tbody>
-				{{#each users}}
-				<tr class="user-row" data-user-id="{{id}}">
+				{{#each endpoints}}
+				<tr class="endpoint-row" data-endpoint-id="{{id}}">
 					<td>{{name}}</td>
-					<td>{{username}}</td>
+					<td>{{secondary}}</td>
 					<td>
 						{{#monsterSwitch}}
 						<input class="recording-toggle" data-type="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}} />
