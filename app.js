@@ -753,21 +753,30 @@ define(function (require) {
 		formatRecordings: function (recordings) {
 			var self = this;
 
-			var formattedData = recordings.map(recording => ({
-				call_id: recording.call_id,
-				media_id: recording.custom_channel_vars['Media-Recording-ID'],
-				direction: recording.origin.split(' ')[0],
-				caller_id_name: recording.caller_id_name,
-				caller_id_number: recording.caller_id_number,
-				callee_id_name: recording.callee_id_name,
-				callee_id_number: recording.callee_id_number,
-				datetime: monster.util.toFriendlyDate(recording.start),
-				date: monster.util.toFriendlyDate(recording.start, 'date'),
-				time: monster.util.toFriendlyDate(recording.start, 'time'),
-				timestamp: recording.start,
-				duration: monster.util.friendlyTimer(recording.duration),
-				uri: `${self.apiUrl}accounts/${self.accountId}/recordings/${recording.custom_channel_vars['Media-Recording-ID']}?accept=audio/mpeg&auth_token=${self.getAuthToken()}`,
-			}));
+			var formattedData = recordings.map(function (recording) {
+				// field names vary by KAZOO version / recorder: newer builds use
+				// start_time and the doc id, older ones used start and a
+				// Media-Recording-ID channel var
+				var ccv = recording.custom_channel_vars || {},
+					mediaId = recording.id || ccv['Media-Recording-ID'],
+					startTime = recording.start_time || recording.start;
+
+				return {
+					call_id: recording.call_id,
+					media_id: mediaId,
+					direction: recording.direction || recording.call_direction || (recording.origin || '').split(' ')[0],
+					caller_id_name: recording.caller_id_name,
+					caller_id_number: recording.caller_id_number,
+					callee_id_name: recording.callee_id_name,
+					callee_id_number: recording.callee_id_number,
+					datetime: monster.util.toFriendlyDate(startTime),
+					date: monster.util.toFriendlyDate(startTime, 'date'),
+					time: monster.util.toFriendlyDate(startTime, 'time'),
+					timestamp: startTime,
+					duration: monster.util.friendlyTimer(recording.duration),
+					uri: self.apiUrl + 'accounts/' + self.accountId + '/recordings/' + mediaId + '?accept=audio/mpeg&auth_token=' + self.getAuthToken()
+				};
+			});
 
 			return formattedData;
 		},
