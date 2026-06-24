@@ -1,43 +1,88 @@
 <div class="recordings-container">
-    <div class="">
-        <div class="action-bar monster-table-header">
-            <div class="filter-by-date">
-            <div class="date-ranges">
-                <span>{{i18n.startDate}}</span>
-                <input id="startDate" type="text" class="date-filter filter-from">
-                <i class="fa fa-calendar"></i>
-                <span>{{i18n.endDate}}</span>
-                <input id="endDate" type="text" class="date-filter filter-to">
-                <i class="fa fa-calendar"></i>
-                <button type="button"
-                    class="apply-filter monster-button-neutral monster-button-fit">{{i18n.filter}}</button>
+    <div class="main-header clearfix">
+        <div class="user-selection-wrapper pull-left">
+            <div class="filters user-selector">
+                <div class="select-header">{{i18n.currentlyViewing}}</div>
+                <select class="select-user" id="select_user">
+                    <option value="all">{{i18n.allUsers}}</option>
+                    {{#each users}}
+                    <option value="{{id}}">{{name}}</option>
+                    {{/each}}
+                </select>
             </div>
+        </div>
+
+        <div class="counts-wrapper pull-left">
+            <div class="count-wrapper" data-type="total">
+                {{i18n.total}}
+                <span class="count-text"></span>
             </div>
         </div>
     </div>
 
-    <div class="content">
-        <div class="data-state" style="display: block;">
-            <div class="recordings-table">
-                <table class="monster-table footable" id="recordings-table">
-                    <thead>
-                        <tr>
-                            <th data-type="html">{{i18n.recordingsTable.direction}}</th>
-                            <th data-type="html">{{i18n.recordingsTable.from}}</th>
-                            <th data-type="html">{{i18n.recordingsTable.targetNumber}}</th>
-                            <th data-type="html" data-sorted="true">{{i18n.recordingsTable.startTime}}</th>
-                            <th data-sorted="true">{{i18n.recordingsTable.duration}}</th>
-                            <th data-filterable="false" data-type="html" data-sortable="false"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    <div class="monster-table-wrapper-spaced">
+        <div class="action-bar monster-table-header">
+            <div class="filters basic-actions pull-left">
+                <div class="select-recordings-wrapper monster-select-dropdown-neutral pull-left" data-toggle="tooltip" data-placement="top" data-original-title="{{i18n.select.tooltip}}">
+                    <li class="dropdown">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="javascript:void(0);">
+                            {{#monsterCheckbox}}
+                            <input class="main-select-recording" type="checkbox"/>
+                            {{/monsterCheckbox}}
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:void(0);" class="select-some-recordings" data-type="all">{{i18n.select.all}}</a></li>
+                            <li><a href="javascript:void(0);" class="select-some-recordings" data-type="none">{{i18n.select.none}}</a></li>
+                        </ul>
+                    </li>
+                </div>
 
-                    </tbody>
-                </table>
+                <div class="filters selected-actions pull-left margin-left">
+                    <a href="javascript:void(0);" class="delete-recordings hidable hidden monster-link" data-toggle="tooltip" data-placement="top" data-original-title="{{i18n.deleteSelected}}">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="filter-by-date">
+                <div class="date-ranges">
+                    <span>{{i18n.startDate}}</span>
+                    <input id="startDate" type="text" class="date-filter filter-from">
+                    <i class="fa fa-calendar"></i>
+                    <span>{{i18n.endDate}}</span>
+                    <input id="endDate" type="text" class="date-filter filter-to">
+                    <i class="fa fa-calendar"></i>
+                    <button type="button"
+                        class="apply-filter monster-button-neutral monster-button-fit">{{i18n.filter}}</button>
+                </div>
             </div>
         </div>
-        <div class="loading-state">
-            <i class="fa fa-spin fa-spinner monster-primary-color"></i>
+
+        <div class="content">
+            <div class="data-state" style="display: block;">
+                <div class="recordings-table">
+                    <table class="monster-table footable" id="recordings-table">
+                        <thead>
+                            <tr>
+                                <th class="select-cell" data-type="html" data-sortable="false" data-filterable="false"></th>
+                                <th data-type="html">{{i18n.recordingsTable.direction}}</th>
+                                <th data-type="html">{{i18n.recordingsTable.from}}</th>
+                                <th data-type="html">{{i18n.recordingsTable.targetNumber}}</th>
+                                <th data-type="html" data-sorted="true">{{i18n.recordingsTable.startTime}}</th>
+                                <th data-sorted="true">{{i18n.recordingsTable.duration}}</th>
+                                <th data-filterable="false" data-type="html" data-sortable="false"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="loading-state">
+                <i class="fa fa-spin fa-spinner monster-primary-color"></i>
+            </div>
         </div>
     </div>
 </div>

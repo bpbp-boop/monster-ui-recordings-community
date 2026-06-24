@@ -10,6 +10,16 @@
 	"endDate": "End date",
 	"filter": "Filter",
 	"close": "Close",
+	"currentlyViewing": "Currently viewing",
+	"allUsers": "All users",
+	"total": "Total",
+	"select": {
+		"tooltip": "Select recordings",
+		"all": "All",
+		"none": "None"
+	},
+	"deleteSelected": "Delete selected",
+	"confirmDeleteSelected": "Are you sure you want to delete the selected recordings?",
 	"recordingsTable": {
 		"direction": "Direction",
 		"from": "From",
@@ -42,7 +52,8 @@
 	"toasts": {
 		"accountSettingsSaved": "Account call recording settings saved!",
 		"settingsSaved": "Call recording settings saved!",
-		"recordingDeleted": "Recording deleted!"
+		"recordingDeleted": "Recording deleted!",
+		"recordingsDeleted": "Recordings deleted!"
 	},
 	"errors": {
 		"getAccount": "Issue getting account data: ",

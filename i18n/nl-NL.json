@@ -10,6 +10,16 @@
 	"endDate": "Einddatum",
 	"filter": "Filteren",
 	"close": "Sluiten",
+	"currentlyViewing": "Huidige weergave",
+	"allUsers": "Alle gebruikers",
+	"total": "Totaal",
+	"select": {
+		"tooltip": "Opnames selecteren",
+		"all": "Alles",
+		"none": "Geen"
+	},
+	"deleteSelected": "Selectie verwijderen",
+	"confirmDeleteSelected": "Weet u zeker dat u de geselecteerde opnames wilt verwijderen?",
 	"recordingsTable": {
 		"direction": "Richting",
 		"from": "Van",
@@ -42,7 +52,8 @@
 	"toasts": {
 		"accountSettingsSaved": "Instellingen voor accountopname opgeslagen!",
 		"settingsSaved": "Instellingen voor gespreksopname opgeslagen!",
-		"recordingDeleted": "Opname verwijderd!"
+		"recordingDeleted": "Opname verwijderd!",
+		"recordingsDeleted": "Opnames verwijderd!"
 	},
 	"errors": {
 		"getAccount": "Probleem bij het ophalen van accountgegevens: ",

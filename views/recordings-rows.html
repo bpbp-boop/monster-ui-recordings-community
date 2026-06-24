@@ -1,5 +1,10 @@
 {{#each recordings}}
 <tr class="recording-row" data-call-id="{{call_id}}" data-recording-id="{{media_id}}">
+    <td style="width:20px;" class="select-cell">
+        {{#monsterCheckbox}}
+        <input class="select-recording" type="checkbox" data-recording-id="{{media_id}}"/>
+        {{/monsterCheckbox}}
+    </td>
     <td>
         {{#compare direction "===" "outbound"}}
         {{telicon "phone-outbound"}} {{i18n.direction.outbound}}

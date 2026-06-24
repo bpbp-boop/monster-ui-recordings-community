@@ -27,6 +27,10 @@ define(function (require) {
 				'url': 'accounts/{accountId}/recordings',
 				'verb': 'GET',
 			},
+			'recordings-community.recordings.listByUser': {
+				'url': 'accounts/{accountId}/users/{userId}/recordings',
+				'verb': 'GET',
+			},
 			// there is no PATCH method included in the default sdk
 			'recordings-community.account.update': {
 				'url': 'accounts/{accountId}/',
@@ -435,17 +439,72 @@ define(function (require) {
 		renderRecordings: function (pArgs) {
 			var self = this,
 				args = pArgs || {},
-				parent = args.container || $('#recordings-community_app_container .app-content-wrapper'),
-				template = $(self.getTemplate({
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
+
+			self.recordingsListUsers(function (users) {
+				var template = $(self.getTemplate({
 					name: 'recordings',
 					data: {
-						user: monster.apps.auth.currentUser
+						user: monster.apps.auth.currentUser,
+						users: users
 					}
 				}));
 
-			monster.ui.footable(template.find('.footable'));
+				monster.ui.tooltips(template);
+				monster.ui.footable(template.find('.footable'));
+				monster.ui.chosen(template.find('.select-user'));
 
-			self.recordingsInitDatePicker(parent, template);
+				self.recordingsInitDatePicker(parent, template);
+				self.bindRecordings(parent, template);
+
+				parent
+					.fadeOut(function () {
+						$(this)
+							.empty()
+							.append(template)
+							.fadeIn();
+
+						self.displayRecordings(parent);
+					});
+			});
+		},
+
+		// fetch the account's users to populate the "currently viewing" filter
+		recordingsListUsers: function (callback) {
+			var self = this;
+
+			self.callApi({
+				resource: 'user.list',
+				data: {
+					accountId: self.accountId
+				},
+				success: function (response) {
+					var users = _.map(response.data, function (user) {
+						return {
+							id: user.id,
+							name: ((user.first_name || '') + ' ' + (user.last_name || '')).trim() || user.username
+						};
+					});
+
+					users = _.sortBy(users, function (user) {
+						return (user.name || '').toLowerCase();
+					});
+
+					callback && callback(users);
+				},
+				error: function () {
+					callback && callback([]);
+				}
+			});
+		},
+
+		bindRecordings: function (parent, template) {
+			var self = this;
+
+			// reload the list when a different user (or "all users") is picked
+			template.find('.select-user').on('change', function () {
+				self.displayRecordings(parent);
+			});
 
 			template.on('click', '.play-recording', function (e) {
 				var $row = $(this).parents('.recording-row'),
@@ -483,29 +542,81 @@ define(function (require) {
 				});
 			});
 
-			parent
-				.fadeOut(function () {
-					$(this)
-						.empty()
-						.append(template)
-						.fadeIn();
+			// show the bulk actions only while at least one row is selected, and
+			// keep the master checkbox in sync with the per-row checkboxes
+			var afterSelect = function () {
+				if (template.find('.select-recording:checked').length) {
+					template.find('.hidable').removeClass('hidden');
+					template.find('.main-select-recording').prop('checked', true);
+				} else {
+					template.find('.hidable').addClass('hidden');
+					template.find('.main-select-recording').prop('checked', false);
+				}
+			};
 
-					self.displayRecordings(parent);
+			template.on('change', '.select-recording', function (e) {
+				e.stopPropagation();
+				afterSelect();
+			});
+
+			template.find('.main-select-recording').on('click', function (e) {
+				e.stopPropagation();
+
+				var isChecked = $(this).prop('checked');
+
+				template.find('.select-recording').prop('checked', isChecked);
+
+				afterSelect();
+			});
+
+			template.find('.select-some-recordings').on('click', function () {
+				var type = $(this).data('type');
+
+				template.find('.select-recording').prop('checked', type === 'all');
+
+				afterSelect();
+			});
+
+			template.find('.delete-recordings').on('click', function () {
+				var recordingIds = template.find('.select-recording:checked').map(function () {
+					return $(this).data('recording-id');
+				}).get();
+
+				if (recordingIds.length === 0) {
+					return;
+				}
+
+				monster.ui.confirm(self.i18n.active().confirmDeleteSelected, function () {
+					self.bulkDeleteRecordings(recordingIds, function () {
+						monster.ui.toast({
+							type: 'success',
+							message: self.i18n.active().toasts.recordingsDeleted
+						});
+
+						self.displayRecordings(parent);
+					});
 				});
+			});
 		},
 
 		displayRecordings: function (container) {
-			var self = this;
+			var self = this,
+				userId = container.find('#select_user').val();
 
-			var fromDate = $('#startDate').datepicker('getDate');
-			var toDate = $('#endDate').datepicker('getDate');
+			var fromDate = container.find('#startDate').datepicker('getDate');
+			var toDate = container.find('#endDate').datepicker('getDate');
 
 			// on first load the datepicker doesn't work. use defaults.
 			if (fromDate instanceof Date === false) {
-				var dates = monster.util.getDefaultRangeDates(self.appFlags.recordings.defaultRange),
-				fromDate = dates.from,
+				var dates = monster.util.getDefaultRangeDates(self.appFlags.recordings.defaultRange);
+				fromDate = dates.from;
 				toDate = dates.to;
 			}
+
+			// reset the selection state and total before (re)loading
+			container.find('.count-wrapper[data-type="total"] .count-text').html('?');
+			container.find('.main-select-recording').prop('checked', false);
+			container.find('.hidable').addClass('hidden');
 
 			var table = container.find('#recordings-table');
 
@@ -516,7 +627,9 @@ define(function (require) {
 						created_to: monster.util.dateToEndOfGregorianDay(toDate)
 					});
 
-					self.recordingGetRows(filters, function ($rows, data) {
+					self.recordingGetRows(filters, userId, function ($rows, data) {
+						container.find('.count-wrapper[data-type="total"] .count-text').html(data.length);
+
 						callback && callback($rows, data);
 					});
 
@@ -527,7 +640,7 @@ define(function (require) {
 			});
 		},
 
-		recordingGetRows: function (filters, callback, startKey, continueData) {
+		recordingGetRows: function (filters, userId, callback, startKey, continueData) {
 			var self = this;
 
 			continueData = continueData || [];
@@ -536,32 +649,78 @@ define(function (require) {
 				filters.start_key = startKey;
 			}
 
-			self.callApi({
-				resource: 'recordings.list',
-				data: {
-					accountId: self.accountId,
-					filters: filters
-				},
-				success: function (response) {
-					var mergedData = $.merge(continueData, response.data);
+			var onSuccess = function (response) {
+				var mergedData = $.merge(continueData, response.data);
 
-					if (response.next_start_key && startKey !== response.next_start_key) {
-						self.recordingGetRows(filters, callback, response.next_start_key, mergedData);
-						return;
+				if (response.next_start_key && startKey !== response.next_start_key) {
+					self.recordingGetRows(filters, userId, callback, response.next_start_key, mergedData);
+					return;
+				}
+
+				var recordings = mergedData;
+				var formattedRecordings = self.formatRecordings(recordings);
+				var $rows = $(self.getTemplate({
+					name: 'recordings-rows',
+					data: {
+						recordings: formattedRecordings,
 					}
+				}));
 
-					var recordings = mergedData;
-					var formattedRecordings = self.formatRecordings(recordings)
-					$rows = $(self.getTemplate({
-						name: 'recordings-rows',
+				callback && callback($rows, recordings);
+			};
+
+			// list a single user's recordings when one is selected, otherwise
+			// fall back to the account-wide listing ("all users")
+			if (userId && userId !== 'all') {
+				monster.request({
+					resource: 'recordings-community.recordings.listByUser',
+					data: {
+						accountId: self.accountId,
+						userId: userId,
+						filters: filters
+					},
+					success: onSuccess,
+					error: function () {
+						callback && callback($(), []);
+					}
+				});
+			} else {
+				self.callApi({
+					resource: 'recordings.list',
+					data: {
+						accountId: self.accountId,
+						filters: filters
+					},
+					success: onSuccess
+				});
+			}
+		},
+
+		bulkDeleteRecordings: function (recordingIds, callback) {
+			var self = this,
+				requests = {};
+
+			_.each(recordingIds, function (recordingId) {
+				requests[recordingId] = function (cb) {
+					monster.request({
+						resource: 'recordings-community.recordings.delete',
 						data: {
-							recordings: formattedRecordings,
+							accountId: self.accountId,
+							recordingId: recordingId
+						},
+						success: function (response) {
+							cb(null, response.data);
+						},
+						error: function () {
+							cb(null, null);
 						}
-					}));
+					});
+				};
+			});
 
-					callback && callback($rows, recordings);
-				},
-			})
+			monster.parallel(requests, function () {
+				callback && callback();
+			});
 		},
 
 		deleteRecording: function (recordingId, callback) {
