@@ -19,10 +19,10 @@
         <div class="bottom-line">{{callee_id_name}}</div>
         {{/if}}
     </td>
-    <td class="select-line no-padding" data-filter-value="{{timestamp}} {{toFriendlyDate timestamp}}"
+    <td class="select-line no-padding" data-filter-value="{{timestamp}} {{datetime}}"
         data-sort-value="{{timestamp}}">
-        <div class="top-line">{{toFriendlyDate timestamp 'date'}}</div>
-        <div class="bottom-line">{{toFriendlyDate timestamp 'time'}}</div>
+        <div class="top-line">{{date}}</div>
+        <div class="bottom-line">{{time}}</div>
     </td>
     <td class="duration">{{duration}}</td>
     <td class="actions">
