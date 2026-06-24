@@ -1,59 +1,57 @@
 {
-	"recordings-community": {
-		"menu": {
-			"recordings": "Opnames",
-			"settings": "Instellingen",
-			"account": "Account",
-			"users": "Gebruikers",
-			"devices": "Apparaten"
-		},
-		"startDate": "Startdatum",
-		"endDate": "Einddatum",
-		"filter": "Filteren",
-		"close": "Sluiten",
-		"recordingsTable": {
-			"direction": "Richting",
-			"from": "Van",
-			"targetNumber": "Doelnummer",
-			"startTime": "Starttijd",
-			"duration": "Duur"
-		},
-		"direction": {
-			"inbound": "Inkomend",
-			"outbound": "Uitgaand"
-		},
-		"accountSettings": {
-			"externalCalls": "Externe oproepen",
-			"internalCalls": "Interne oproepen",
-			"inboundExternal": "Inkomend extern",
-			"outboundExternal": "Uitgaand extern",
-			"inboundInternal": "Inkomend intern",
-			"outboundInternal": "Uitgaand intern",
-			"save": "Opslaan"
-		},
-		"endpointSettings": {
-			"name": "Naam",
-			"username": "Gebruikersnaam",
-			"type": "Type",
-			"inboundExternal": "Inkomend extern",
-			"outboundExternal": "Uitgaand extern",
-			"inboundInternal": "Inkomend intern",
-			"outboundInternal": "Uitgaand intern"
-		},
-		"toasts": {
-			"accountSettingsSaved": "Instellingen voor accountopname opgeslagen!",
-			"settingsSaved": "Instellingen voor gespreksopname opgeslagen!",
-			"recordingDeleted": "Opname verwijderd!"
-		},
-		"errors": {
-			"getAccount": "Probleem bij het ophalen van accountgegevens: ",
-			"updateAccount": "Probleem bij het bijwerken van accountgegevens: ",
-			"getUsers": "Probleem bij het ophalen van gebruikers",
-			"getDevices": "Probleem bij het ophalen van apparaten",
-			"updateUser": "Probleem bij het bijwerken van gebruiker",
-			"updateDevice": "Probleem bij het bijwerken van apparaat",
-			"deleteRecording": "Probleem bij het verwijderen van opname"
-		},
-		"confirmDeleteRecording": "Weet u zeker dat u deze opname wilt verwijderen?"
-	}
+	"menu": {
+		"recordings": "Opnames",
+		"settings": "Instellingen",
+		"account": "Account",
+		"users": "Gebruikers",
+		"devices": "Apparaten"
+	},
+	"startDate": "Startdatum",
+	"endDate": "Einddatum",
+	"filter": "Filteren",
+	"close": "Sluiten",
+	"recordingsTable": {
+		"direction": "Richting",
+		"from": "Van",
+		"targetNumber": "Doelnummer",
+		"startTime": "Starttijd",
+		"duration": "Duur"
+	},
+	"direction": {
+		"inbound": "Inkomend",
+		"outbound": "Uitgaand"
+	},
+	"accountSettings": {
+		"externalCalls": "Externe oproepen",
+		"internalCalls": "Interne oproepen",
+		"inboundExternal": "Inkomend extern",
+		"outboundExternal": "Uitgaand extern",
+		"inboundInternal": "Inkomend intern",
+		"outboundInternal": "Uitgaand intern",
+		"save": "Opslaan"
+	},
+	"endpointSettings": {
+		"name": "Naam",
+		"username": "Gebruikersnaam",
+		"type": "Type",
+		"inboundExternal": "Inkomend extern",
+		"outboundExternal": "Uitgaand extern",
+		"inboundInternal": "Inkomend intern",
+		"outboundInternal": "Uitgaand intern"
+	},
+	"toasts": {
+		"accountSettingsSaved": "Instellingen voor accountopname opgeslagen!",
+		"settingsSaved": "Instellingen voor gespreksopname opgeslagen!",
+		"recordingDeleted": "Opname verwijderd!"
+	},
+	"errors": {
+		"getAccount": "Probleem bij het ophalen van accountgegevens: ",
+		"updateAccount": "Probleem bij het bijwerken van accountgegevens: ",
+		"getUsers": "Probleem bij het ophalen van gebruikers",
+		"getDevices": "Probleem bij het ophalen van apparaten",
+		"updateUser": "Probleem bij het bijwerken van gebruiker",
+		"updateDevice": "Probleem bij het bijwerken van apparaat",
+		"deleteRecording": "Probleem bij het verwijderen van opname"
+	},
+	"confirmDeleteRecording": "Weet u zeker dat u deze opname wilt verwijderen?"
 }

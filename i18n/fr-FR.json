@@ -1,59 +1,57 @@
 {
-	"recordings-community": {
-		"menu": {
-			"recordings": "Enregistrements",
-			"settings": "Paramètres",
-			"account": "Compte",
-			"users": "Utilisateurs",
-			"devices": "Appareils"
-		},
-		"startDate": "Date de début",
-		"endDate": "Date de fin",
-		"filter": "Filtrer",
-		"close": "Fermer",
-		"recordingsTable": {
-			"direction": "Sens",
-			"from": "De",
-			"targetNumber": "Numéro cible",
-			"startTime": "Heure de début",
-			"duration": "Durée"
-		},
-		"direction": {
-			"inbound": "Entrant",
-			"outbound": "Sortant"
-		},
-		"accountSettings": {
-			"externalCalls": "Appels externes",
-			"internalCalls": "Appels internes",
-			"inboundExternal": "Entrant externe",
-			"outboundExternal": "Sortant externe",
-			"inboundInternal": "Entrant interne",
-			"outboundInternal": "Sortant interne",
-			"save": "Enregistrer"
-		},
-		"endpointSettings": {
-			"name": "Nom",
-			"username": "Nom d'utilisateur",
-			"type": "Type",
-			"inboundExternal": "Entrant externe",
-			"outboundExternal": "Sortant externe",
-			"inboundInternal": "Entrant interne",
-			"outboundInternal": "Sortant interne"
-		},
-		"toasts": {
-			"accountSettingsSaved": "Paramètres d'enregistrement des appels du compte enregistrés !",
-			"settingsSaved": "Paramètres d'enregistrement des appels enregistrés !",
-			"recordingDeleted": "Enregistrement supprimé !"
-		},
-		"errors": {
-			"getAccount": "Problème lors de la récupération des données du compte : ",
-			"updateAccount": "Problème lors de la mise à jour des données du compte : ",
-			"getUsers": "Problème lors de la récupération des utilisateurs",
-			"getDevices": "Problème lors de la récupération des appareils",
-			"updateUser": "Problème lors de la mise à jour de l'utilisateur",
-			"updateDevice": "Problème lors de la mise à jour de l'appareil",
-			"deleteRecording": "Problème lors de la suppression de l'enregistrement"
-		},
-		"confirmDeleteRecording": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?"
-	}
+	"menu": {
+		"recordings": "Enregistrements",
+		"settings": "Paramètres",
+		"account": "Compte",
+		"users": "Utilisateurs",
+		"devices": "Appareils"
+	},
+	"startDate": "Date de début",
+	"endDate": "Date de fin",
+	"filter": "Filtrer",
+	"close": "Fermer",
+	"recordingsTable": {
+		"direction": "Sens",
+		"from": "De",
+		"targetNumber": "Numéro cible",
+		"startTime": "Heure de début",
+		"duration": "Durée"
+	},
+	"direction": {
+		"inbound": "Entrant",
+		"outbound": "Sortant"
+	},
+	"accountSettings": {
+		"externalCalls": "Appels externes",
+		"internalCalls": "Appels internes",
+		"inboundExternal": "Entrant externe",
+		"outboundExternal": "Sortant externe",
+		"inboundInternal": "Entrant interne",
+		"outboundInternal": "Sortant interne",
+		"save": "Enregistrer"
+	},
+	"endpointSettings": {
+		"name": "Nom",
+		"username": "Nom d'utilisateur",
+		"type": "Type",
+		"inboundExternal": "Entrant externe",
+		"outboundExternal": "Sortant externe",
+		"inboundInternal": "Entrant interne",
+		"outboundInternal": "Sortant interne"
+	},
+	"toasts": {
+		"accountSettingsSaved": "Paramètres d'enregistrement des appels du compte enregistrés !",
+		"settingsSaved": "Paramètres d'enregistrement des appels enregistrés !",
+		"recordingDeleted": "Enregistrement supprimé !"
+	},
+	"errors": {
+		"getAccount": "Problème lors de la récupération des données du compte : ",
+		"updateAccount": "Problème lors de la mise à jour des données du compte : ",
+		"getUsers": "Problème lors de la récupération des utilisateurs",
+		"getDevices": "Problème lors de la récupération des appareils",
+		"updateUser": "Problème lors de la mise à jour de l'utilisateur",
+		"updateDevice": "Problème lors de la mise à jour de l'appareil",
+		"deleteRecording": "Problème lors de la suppression de l'enregistrement"
+	},
+	"confirmDeleteRecording": "Êtes-vous sûr de vouloir supprimer cet enregistrement ?"
 }
