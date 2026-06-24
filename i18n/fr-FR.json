@@ -13,7 +13,7 @@
 	"currentlyViewing": "Affichage actuel",
 	"allUsers": "Tous les utilisateurs",
 	"total": "Total",
-	"select": {
+	"selectRecordings": {
 		"tooltip": "Sélectionner des enregistrements",
 		"all": "Tout",
 		"none": "Aucun"

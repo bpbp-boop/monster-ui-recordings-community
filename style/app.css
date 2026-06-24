@@ -15,8 +15,18 @@
 }
 
 .recordings-container .main-header .user-selector,
+.recordings-container .main-header .chosen-drop,
 .recordings-container .main-header .chosen-container {
     width: 300px !important;
+}
+
+.recordings-container .main-header .chosen-container > a {
+    height: 40px;
+    line-height: 40px;
+}
+
+.recordings-container .main-header .user-selector .chosen-container .chosen-single span {
+    font-size: 18px;
 }
 
 .recordings-container .main-header .counts-wrapper {

@@ -13,7 +13,7 @@
 	"currentlyViewing": "Currently viewing",
 	"allUsers": "All users",
 	"total": "Total",
-	"select": {
+	"selectRecordings": {
 		"tooltip": "Select recordings",
 		"all": "All",
 		"none": "None"
