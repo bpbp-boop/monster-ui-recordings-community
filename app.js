@@ -463,9 +463,12 @@ define(function (require) {
 							.append(template)
 							.fadeIn();
 
-						// chosen must be initialised once the select is in the DOM,
-						// otherwise the rendered options come out blank
-						monster.ui.chosen(template.find('.select-user'));
+						// chosen must be initialised once the select is in the DOM
+						// and then refreshed, otherwise the rendered options can
+						// come out blank
+						var $selectUser = template.find('.select-user');
+						monster.ui.chosen($selectUser);
+						$selectUser.trigger('chosen:updated');
 
 						self.displayRecordings(parent);
 					});
@@ -479,13 +482,16 @@ define(function (require) {
 			self.callApi({
 				resource: 'user.list',
 				data: {
-					accountId: self.accountId
+					accountId: self.accountId,
+					filters: {
+						paginate: 'false'
+					}
 				},
 				success: function (response) {
 					var users = _.map(response.data, function (user) {
 						return {
 							id: user.id,
-							name: ((user.first_name || '') + ' ' + (user.last_name || '')).trim() || user.username
+							name: monster.util.getUserFullName(user) || user.username || user.email || user.id
 						};
 					});
 
