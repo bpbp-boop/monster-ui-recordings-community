@@ -10,6 +10,7 @@ Standard library only (Python 3.6+): http.server, urllib, smtplib, email.
 
 import argparse
 import configparser
+import datetime
 import json
 import logging
 import smtplib
@@ -66,6 +67,85 @@ def download_recording(account_id, recording_id, auth_token):
         return resp.read(), content_type
 
 
+def fetch_recording_doc(account_id, recording_id, auth_token):
+    """Fetch the recording's metadata document (the JSON the same endpoint
+    returns for any non-audio Accept). Returns the `data` dict, or {} on
+    failure so a metadata hiccup never blocks delivering the recording."""
+    url = "{base}/accounts/{account}/recordings/{rec}".format(
+        base=CONFIG["kazoo_api_base"].rstrip("/"),
+        account=account_id,
+        rec=recording_id,
+    )
+    req = urllib.request.Request(
+        url, method="GET",
+        headers={"X-Auth-Token": auth_token, "Accept": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8")).get("data", {})
+    except Exception as exc:  # noqa: BLE001 - metadata is best-effort
+        log.warning("could not fetch recording metadata for %s: %s",
+                    recording_id, exc)
+        return {}
+
+
+# Kazoo timestamps are gregorian seconds (since year 0); offset to unix epoch
+GREGORIAN_OFFSET = 62167219200
+
+
+def _format_party(name, number):
+    name = (name or "").strip()
+    number = (number or "").strip()
+    if name and number and name != number:
+        return "{name} <{number}>".format(name=name, number=number)
+    return name or number
+
+
+def format_call_details(doc):
+    """Build (subject_suffix, body_text) from a recording metadata doc.
+    Empty/unknown fields are omitted."""
+    direction = (doc.get("direction") or doc.get("call_direction") or "").capitalize()
+    caller = _format_party(doc.get("caller_id_name"), doc.get("caller_id_number")) \
+        or (doc.get("from") or "")
+    callee = _format_party(doc.get("callee_id_name"), doc.get("callee_id_number")) \
+        or (doc.get("to") or "")
+
+    when = ""
+    start = doc.get("start_time")
+    if isinstance(start, (int, float)) and start > GREGORIAN_OFFSET:
+        when = datetime.datetime.utcfromtimestamp(
+            start - GREGORIAN_OFFSET).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    seconds = doc.get("duration")
+    if not isinstance(seconds, (int, float)) \
+            and isinstance(doc.get("duration_ms"), (int, float)):
+        seconds = doc["duration_ms"] / 1000.0
+    duration = ""
+    if isinstance(seconds, (int, float)):
+        seconds = int(seconds)
+        duration = "{m}:{s:02d}".format(m=seconds // 60, s=seconds % 60)
+
+    rows = [
+        ("Direction", direction),
+        ("From", caller),
+        ("To", callee),
+        ("Date / time", when),
+        ("Duration", duration),
+        ("Call ID", doc.get("call_id") or ""),
+    ]
+    body = "\n".join(
+        "{label}: {value}".format(label=label, value=value)
+        for label, value in rows if value
+    )
+
+    if caller or callee:
+        subject_suffix = "{caller} -> {callee}".format(
+            caller=caller or "?", callee=callee or "?")
+    else:
+        subject_suffix = ""
+    return subject_suffix, body
+
+
 # maps recording content types to a file extension for the attachment
 AUDIO_EXTENSIONS = {
     "audio/mpeg": "mp3",
@@ -77,8 +157,9 @@ AUDIO_EXTENSIONS = {
 }
 
 
-def send_email(to_addr, recording_id, audio_bytes, content_type):
-    """Email the recording media as an attachment."""
+def send_email(to_addr, recording_id, audio_bytes, content_type, doc):
+    """Email the recording media as an attachment, with call details from the
+    recording metadata doc in the body and subject."""
     # content_type may carry params, e.g. "audio/wav; charset=binary"
     mime = content_type.split(";")[0].strip().lower()
     maintype, _, subtype = mime.partition("/")
@@ -86,15 +167,20 @@ def send_email(to_addr, recording_id, audio_bytes, content_type):
         maintype, subtype = "application", "octet-stream"
     ext = AUDIO_EXTENSIONS.get(mime, subtype or "bin")
 
+    subject_suffix, details = format_call_details(doc)
+
     msg = EmailMessage()
     msg["From"] = CONFIG["email_from"]
     msg["To"] = to_addr
-    msg["Subject"] = "{prefix} {rec}".format(
-        prefix=CONFIG["email_subject_prefix"], rec=recording_id,
+    msg["Subject"] = "{prefix}: {suffix}".format(
+        prefix=CONFIG["email_subject_prefix"],
+        suffix=subject_suffix or recording_id,
     )
-    msg.set_content(
-        "A new call recording ({rec}) is attached.".format(rec=recording_id)
-    )
+    body = "A new call recording is attached.\n"
+    if details:
+        body += "\n" + details + "\n"
+    body += "\nRecording ID: {rec}\n".format(rec=recording_id)
+    msg.set_content(body)
     msg.add_attachment(
         audio_bytes,
         maintype=maintype,
@@ -146,8 +232,9 @@ def handle_event(payload):
     log.info("processing recording %s for account %s -> %s",
              recording_id, account_id, to_addr)
     auth_token = kazoo_auth_token()
+    doc = fetch_recording_doc(account_id, recording_id, auth_token)
     audio, content_type = download_recording(account_id, recording_id, auth_token)
-    send_email(to_addr, recording_id, audio, content_type)
+    send_email(to_addr, recording_id, audio, content_type, doc)
     log.info("emailed recording %s (%d bytes, %s) to %s",
              recording_id, len(audio), content_type, to_addr)
 

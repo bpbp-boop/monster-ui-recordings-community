@@ -91,9 +91,12 @@ A correct token attempts the KAZOO fetch + email; a wrong/missing token returns
    `custom_data`) and rejects mismatches with `403`.
 3. It exchanges the configured account **API key** for an auth token
    (`PUT /api_auth`), since webhook payloads do not include one.
-4. It downloads the media (`GET /accounts/{id}/recordings/{id}` with
-   `Accept: audio/mpeg`).
-5. It emails the audio as an attachment via SMTP.
+4. It fetches the recording's metadata doc (`GET /accounts/{id}/recordings/{id}`
+   with `Accept: application/json`) for the call details.
+5. It downloads the media (same URL with `Accept: audio/mpeg`).
+6. It emails the audio as an attachment via SMTP, with the call details
+   (direction, from/to, date/time, duration, call id) in the subject and body.
+   A metadata fetch failure is non-fatal — the recording is still delivered.
 
 The recipient address and shared token travel with each event in the webhook's
 `custom_data`, so the receiver itself is generic.
