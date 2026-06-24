@@ -762,6 +762,8 @@ define(function (require) {
 				callee_id_name: recording.callee_id_name,
 				callee_id_number: recording.callee_id_number,
 				datetime: monster.util.toFriendlyDate(recording.start),
+				date: monster.util.toFriendlyDate(recording.start, 'date'),
+				time: monster.util.toFriendlyDate(recording.start, 'time'),
 				timestamp: recording.start,
 				duration: monster.util.friendlyTimer(recording.duration),
 				uri: `${self.apiUrl}accounts/${self.accountId}/recordings/${recording.custom_channel_vars['Media-Recording-ID']}?accept=audio/mpeg&auth_token=${self.getAuthToken()}`,
