@@ -96,7 +96,10 @@ A correct token attempts the KAZOO fetch + email; a wrong/missing token returns
 5. It downloads the media (same URL with `Accept: audio/mpeg`).
 6. It emails the audio as an attachment via SMTP, with the call details
    (direction, from/to, date/time, duration, call id) in the subject and body.
-   A metadata fetch failure is non-fatal — the recording is still delivered.
+   The date/time is rendered in the **account's timezone** (read from the
+   account doc's `timezone` and resolved via the system tz database), falling
+   back to UTC. A metadata/timezone fetch failure is non-fatal — the recording
+   is still delivered.
 
 The recipient address and shared token travel with each event in the webhook's
 `custom_data`, so the receiver itself is generic.
