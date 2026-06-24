@@ -3,8 +3,8 @@
 		<table class="monster-table footable settings-recording-table" id="settings-recording-table">
 			<thead>
 				<tr>
-					<th data-type="html" data-sorted="true">{{i18n.endpointSettings.name}}</th>
-					<th data-type="html">{{secondaryLabel}}</th>
+					<th data-type="text" data-sorted="true">{{i18n.endpointSettings.name}}</th>
+					<th data-type="text">{{secondaryLabel}}</th>
 					<th data-type="html" data-sortable="false" data-filterable="false">{{i18n.endpointSettings.inboundExternal}}</th>
 					<th data-type="html" data-sortable="false" data-filterable="false">{{i18n.endpointSettings.outboundExternal}}</th>
 					<th data-type="html" data-sortable="false" data-filterable="false">{{i18n.endpointSettings.inboundInternal}}</th>
@@ -14,8 +14,8 @@
 			<tbody>
 				{{#each endpoints}}
 				<tr class="endpoint-row" data-endpoint-id="{{id}}">
-					<td>{{name}}</td>
-					<td>{{secondary}}</td>
+					<td data-sort-value="{{name}}">{{name}}</td>
+					<td data-sort-value="{{secondary}}">{{secondary}}</td>
 					<td>
 						{{#monsterSwitch}}
 						<input class="recording-toggle" data-type="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}} />
