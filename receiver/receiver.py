@@ -164,6 +164,14 @@ class Handler(BaseHTTPRequestHandler):
             self._reply(404, "not found")
             return
 
+        # optional source-IP allowlist (the token alone is not a real secret,
+        # since it ships in the client-served app.js)
+        peer = self.client_address[0]
+        if CONFIG["allowed_ips"] and peer not in CONFIG["allowed_ips"]:
+            log.warning("rejected request from disallowed peer %s", peer)
+            self._reply(403, "forbidden")
+            return
+
         length = int(self.headers.get("Content-Length", 0))
         raw = self.rfile.read(length) if length else b""
 
@@ -216,6 +224,11 @@ def load_config(path):
         "smtp_password": parser.get("smtp", "password", fallback=""),
         "smtp_use_tls": parser.getboolean("smtp", "use_tls", fallback=False),
         "token": parser.get("security", "token"),
+        "allowed_ips": [
+            ip.strip()
+            for ip in parser.get("security", "allowed_ips", fallback="").split(",")
+            if ip.strip()
+        ],
     })
 
 

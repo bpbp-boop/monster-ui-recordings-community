@@ -97,3 +97,17 @@ A correct token attempts the KAZOO fetch + email; a wrong/missing token returns
 
 The recipient address and shared token travel with each event in the webhook's
 `custom_data`, so the receiver itself is generic.
+
+## Security
+
+The `token` is **not a strong secret**. It is configured in the Monster UI
+`app.js` (`appFlags.emailWebhook.token`), which is a static file served to the
+browser, so anyone who can load the app — or fetch the JS file — can read it. It
+only stops casual/unauthenticated POSTs to the endpoint.
+
+The real control is restricting who can reach the receiver. Set `allowed_ips`
+in `[security]` to the KAZOO cluster node IPs (the receiver rejects any other
+peer with `403`), and/or add a host firewall rule limiting the listen port to
+those nodes. If the receiver sits behind a reverse proxy, every request appears
+to come from the proxy — enforce the allowlist at the proxy or firewall layer
+instead.
