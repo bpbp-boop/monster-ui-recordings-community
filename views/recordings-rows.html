@@ -2,9 +2,9 @@
 <tr class="recording-row" data-call-id="{{call_id}}" data-recording-id="{{media_id}}">
     <td>
         {{#compare direction "===" "outbound"}}
-        {{telicon "phone-outbound"}} Outbound
+        {{telicon "phone-outbound"}} {{i18n.direction.outbound}}
         {{else}}
-        {{telicon "phone-inbound"}} Inbound
+        {{telicon "phone-inbound"}} {{i18n.direction.inbound}}
         {{/compare}}
     </td>
     <td>{{caller_id_name}}</td>

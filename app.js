@@ -4,13 +4,14 @@ define(function (require) {
 		monster = require('monster');
 
 	var app = {
-		name: 'skeleton',
+		name: 'recordings-community',
 
 		css: ['app'],
 
 		i18n: {
 			'en-US': { customCss: false },
-			'fr-FR': { customCss: false }
+			'fr-FR': { customCss: false },
+			'nl-NL': { customCss: false }
 		},
 
 		appFlags: {
@@ -23,7 +24,7 @@ define(function (require) {
 		// Defines API requests not included in the SDK
 		requests: {
 			'recordings-community.recordings.list': {
-				'url': 'accounts/{accountId}/{userId}/recordings',
+				'url': 'accounts/{accountId}/recordings',
 				'verb': 'GET',
 			},
 			// there is no PATCH method included in the default sdk
@@ -71,30 +72,31 @@ define(function (require) {
 
 		// Entry Point of the app
 		render: function (container) {
-			var self = this;
+			var self = this,
+				i18n = self.i18n.active();
 
 			monster.ui.generateAppLayout(self, {
 				menus: [
 					{
 						tabs: [
 							{
-								text: 'Recordings',
+								text: i18n.menu.recordings,
 								callback: self.renderRecordings
 							},
 							{
-								text: 'Settings',
+								text: i18n.menu.settings,
 								menus: [{
 									tabs: [
 										{
-											text: 'Account',
+											text: i18n.menu.account,
 											callback: self.renderAccountSettings
 										},
 										{
-											text: 'Users',
+											text: i18n.menu.users,
 											callback: self.renderUserSettings
 										},
 										{
-											text: 'Devices',
+											text: i18n.menu.devices,
 											callback: self.renderDeviceSettings
 										},
 									],
@@ -109,7 +111,7 @@ define(function (require) {
 		renderAccountSettings: function (pArgs) {
 			var self = this,
 				args = pArgs || {},
-				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
 
 			self.getAccount(function (account) {
 				var inbound_external_enabled = false;
@@ -147,7 +149,6 @@ define(function (require) {
 
 				template.find('form .save').on('click', function () {
 					var formData = monster.ui.getFormData('account-settings');
-					console.log(formData);
 
 					var settings = {
 						"call_recording": {
@@ -176,7 +177,7 @@ define(function (require) {
 
 					monster.ui.toast({
 						type: 'success',
-						message: 'Account call recording settings saved!',
+						message: self.i18n.active().toasts.accountSettingsSaved,
 					});
 				});
 
@@ -205,7 +206,7 @@ define(function (require) {
 					callback && callback(account)
 				},
 				error: function (response) {
-					monster.ui.alert('Issue getting account data'.response);
+					monster.ui.alert('error', self.i18n.active().errors.getAccount + JSON.stringify(response));
 				}
 			});
 		},
@@ -224,7 +225,7 @@ define(function (require) {
 					return account;
 				},
 				error: function (response) {
-					monster.ui.alert('Issue getting account data'.response);
+					monster.ui.alert('error', self.i18n.active().errors.updateAccount + JSON.stringify(response));
 				}
 			});
 		},
@@ -242,8 +243,9 @@ define(function (require) {
 		// they only differ by resources, id key and the displayed columns
 		recordingEndpoints: {
 			user: {
-				label: 'user',
-				secondaryLabel: 'Username',
+				secondaryLabelKey: 'username',
+				getErrorKey: 'getUsers',
+				updateErrorKey: 'updateUser',
 				listResource: 'user.list',
 				getResource: 'user.get',
 				updateRequest: 'recordings-community.user.update',
@@ -256,8 +258,9 @@ define(function (require) {
 				}
 			},
 			device: {
-				label: 'device',
-				secondaryLabel: 'Type',
+				secondaryLabelKey: 'type',
+				getErrorKey: 'getDevices',
+				updateErrorKey: 'updateDevice',
 				listResource: 'device.list',
 				getResource: 'device.get',
 				updateRequest: 'recordings-community.device.update',
@@ -275,13 +278,13 @@ define(function (require) {
 			var self = this,
 				config = self.recordingEndpoints[type],
 				args = pArgs || {},
-				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
 
 			self.getEndpointsWithRecording(type, function (endpoints) {
 				var template = $(self.getTemplate({
 					name: 'settings-recording',
 					data: {
-						secondaryLabel: config.secondaryLabel,
+						secondaryLabel: self.i18n.active().endpointSettings[config.secondaryLabelKey],
 						endpoints: self.formatEndpoints(type, endpoints)
 					}
 				}));
@@ -311,7 +314,7 @@ define(function (require) {
 					self.updateEndpoint(type, endpointId, settings, function () {
 						monster.ui.toast({
 							type: 'success',
-							message: 'Call recording settings saved!'
+							message: self.i18n.active().toasts.settingsSaved
 						});
 					});
 				});
@@ -405,7 +408,7 @@ define(function (require) {
 					callback && callback(response.data);
 				},
 				error: function (response) {
-					monster.ui.alert('error', 'Issue getting ' + config.label + 's');
+					monster.ui.alert('error', self.i18n.active().errors[config.getErrorKey]);
 				}
 			});
 		},
@@ -424,7 +427,7 @@ define(function (require) {
 					callback && callback(response.data);
 				},
 				error: function (response) {
-					monster.ui.alert('error', 'Issue updating ' + config.label);
+					monster.ui.alert('error', self.i18n.active().errors[config.updateErrorKey]);
 				}
 			});
 		},
@@ -432,7 +435,7 @@ define(function (require) {
 		renderRecordings: function (pArgs) {
 			var self = this,
 				args = pArgs || {},
-				parent = args.container || $('#recordings_app_container .app-content-wrapper'),
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper'),
 				template = $(self.getTemplate({
 					name: 'recordings',
 					data: {
@@ -440,7 +443,6 @@ define(function (require) {
 					}
 				}));
 
-			monster.ui.chosen(template.find('.filter-direction'));
 			monster.ui.footable(template.find('.footable'));
 
 			self.recordingsInitDatePicker(parent, template);
@@ -469,13 +471,13 @@ define(function (require) {
 				var $row = $(this).parents('.recording-row'),
 					mediaId = $row.data('recording-id');
 
-				monster.ui.confirm('Are you sure you want to delete this recording?', function () {
+				monster.ui.confirm(self.i18n.active().confirmDeleteRecording, function () {
 					self.deleteRecording(mediaId, function () {
 						$row.remove();
 
 						monster.ui.toast({
 							type: 'success',
-							message: 'Recording deleted!'
+							message: self.i18n.active().toasts.recordingDeleted
 						});
 					});
 				});
@@ -509,7 +511,6 @@ define(function (require) {
 
 			monster.ui.footable(table, {
 				getData: function (filters, callback) {
-					console.log(filters);
 					filters = $.extend(true, filters, {
 						created_from: monster.util.dateToBeginningOfGregorianDay(fromDate),
 						created_to: monster.util.dateToEndOfGregorianDay(toDate)
@@ -534,8 +535,6 @@ define(function (require) {
 			if (typeof startKey !== 'undefined') {
 				filters.start_key = startKey;
 			}
-
-			console.log(filters);
 
 			self.callApi({
 				resource: 'recordings.list',
@@ -578,7 +577,7 @@ define(function (require) {
 					callback && callback(response.data);
 				},
 				error: function (response) {
-					monster.ui.alert('error', 'Issue deleting recording');
+					monster.ui.alert('error', self.i18n.active().errors.deleteRecording);
 				}
 			});
 		},
@@ -591,7 +590,7 @@ define(function (require) {
 				media_id: recording.custom_channel_vars['Media-Recording-ID'],
 				direction: recording.origin.split(' ')[0],
 				caller_id_name: recording.caller_id_name,
-				caller_id_number: recording.caller_id_name,
+				caller_id_number: recording.caller_id_number,
 				callee_id_name: recording.callee_id_name,
 				callee_id_number: recording.callee_id_number,
 				datetime: monster.util.toFriendlyDate(recording.start),
