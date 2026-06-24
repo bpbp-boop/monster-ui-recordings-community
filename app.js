@@ -4,7 +4,7 @@ define(function (require) {
 		monster = require('monster');
 
 	var app = {
-		name: 'skeleton',
+		name: 'recordings-community',
 
 		css: ['app'],
 
@@ -23,7 +23,7 @@ define(function (require) {
 		// Defines API requests not included in the SDK
 		requests: {
 			'recordings-community.recordings.list': {
-				'url': 'accounts/{accountId}/{userId}/recordings',
+				'url': 'accounts/{accountId}/recordings',
 				'verb': 'GET',
 			},
 			// there is no PATCH method included in the default sdk
@@ -109,7 +109,7 @@ define(function (require) {
 		renderAccountSettings: function (pArgs) {
 			var self = this,
 				args = pArgs || {},
-				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
 
 			self.getAccount(function (account) {
 				var inbound_external_enabled = false;
@@ -147,7 +147,6 @@ define(function (require) {
 
 				template.find('form .save').on('click', function () {
 					var formData = monster.ui.getFormData('account-settings');
-					console.log(formData);
 
 					var settings = {
 						"call_recording": {
@@ -205,7 +204,7 @@ define(function (require) {
 					callback && callback(account)
 				},
 				error: function (response) {
-					monster.ui.alert('Issue getting account data'.response);
+					monster.ui.alert('error', 'Issue getting account data: ' + JSON.stringify(response));
 				}
 			});
 		},
@@ -224,7 +223,7 @@ define(function (require) {
 					return account;
 				},
 				error: function (response) {
-					monster.ui.alert('Issue getting account data'.response);
+					monster.ui.alert('error', 'Issue updating account data: ' + JSON.stringify(response));
 				}
 			});
 		},
@@ -275,7 +274,7 @@ define(function (require) {
 			var self = this,
 				config = self.recordingEndpoints[type],
 				args = pArgs || {},
-				parent = args.container || $('#recording_settings_app_container .app-content-wrapper');
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
 
 			self.getEndpointsWithRecording(type, function (endpoints) {
 				var template = $(self.getTemplate({
@@ -432,7 +431,7 @@ define(function (require) {
 		renderRecordings: function (pArgs) {
 			var self = this,
 				args = pArgs || {},
-				parent = args.container || $('#recordings_app_container .app-content-wrapper'),
+				parent = args.container || $('#recordings-community_app_container .app-content-wrapper'),
 				template = $(self.getTemplate({
 					name: 'recordings',
 					data: {
@@ -440,7 +439,6 @@ define(function (require) {
 					}
 				}));
 
-			monster.ui.chosen(template.find('.filter-direction'));
 			monster.ui.footable(template.find('.footable'));
 
 			self.recordingsInitDatePicker(parent, template);
@@ -509,7 +507,6 @@ define(function (require) {
 
 			monster.ui.footable(table, {
 				getData: function (filters, callback) {
-					console.log(filters);
 					filters = $.extend(true, filters, {
 						created_from: monster.util.dateToBeginningOfGregorianDay(fromDate),
 						created_to: monster.util.dateToEndOfGregorianDay(toDate)
@@ -534,8 +531,6 @@ define(function (require) {
 			if (typeof startKey !== 'undefined') {
 				filters.start_key = startKey;
 			}
-
-			console.log(filters);
 
 			self.callApi({
 				resource: 'recordings.list',
@@ -591,7 +586,7 @@ define(function (require) {
 				media_id: recording.custom_channel_vars['Media-Recording-ID'],
 				direction: recording.origin.split(' ')[0],
 				caller_id_name: recording.caller_id_name,
-				caller_id_number: recording.caller_id_name,
+				caller_id_number: recording.caller_id_number,
 				callee_id_name: recording.callee_id_name,
 				callee_id_number: recording.callee_id_number,
 				datetime: monster.util.toFriendlyDate(recording.start),

@@ -2,19 +2,19 @@
 	<form id="account-settings" class="form-horizontal">
 		<legend>External calls</legend>
 		<div class="control-group">
-			<label class="control-label" for="inputEmail">Inbound External</label>
+			<label class="control-label" for="inbound-offnet">Inbound External</label>
 			<div class="controls">
 				{{#monsterSwitch }}
-				<input name="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}}/>
+				<input id="inbound-offnet" name="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}}/>
 				{{/monsterSwitch}}
 			</div>
 		</div>
 
 		<div class="control-group">
-			<label class="control-label" for="inputEmail">Outbound External</label>
+			<label class="control-label" for="outbound-offnet">Outbound External</label>
 			<div class="controls">
 				{{#monsterSwitch }}
-				<input name="outbound-offnet" type="checkbox" {{#if outbound_external_enabled}}checked{{/if}} />
+				<input id="outbound-offnet" name="outbound-offnet" type="checkbox" {{#if outbound_external_enabled}}checked{{/if}} />
 				{{/monsterSwitch}}
 			</div>
 		</div>
@@ -22,19 +22,19 @@
 
 		<legend>Internal calls</legend>
 		<div class="control-group">
-			<label class="control-label" for="inputEmail">Inbound Internal</label>
+			<label class="control-label" for="inbound-onnet">Inbound Internal</label>
 			<div class="controls">
 				{{#monsterSwitch }}
-				<input name="inbound-onnet" type="checkbox" {{#if inbound_internal_enabled}}checked{{/if}} />
+				<input id="inbound-onnet" name="inbound-onnet" type="checkbox" {{#if inbound_internal_enabled}}checked{{/if}} />
 				{{/monsterSwitch}}
 			</div>
 		</div>
 
 		<div class="control-group">
-			<label class="control-label" for="inputEmail">Outbound Internal</label>
+			<label class="control-label" for="outbound-onnet">Outbound Internal</label>
 			<div class="controls">
 				{{#monsterSwitch }}
-				<input name="outbound-onnet" type="checkbox" {{#if outbound_internal_enabled}}checked{{/if}} />
+				<input id="outbound-onnet" name="outbound-onnet" type="checkbox" {{#if outbound_internal_enabled}}checked{{/if}} />
 				{{/monsterSwitch}}
 			</div>
 		</div>
