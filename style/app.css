@@ -1,3 +1,67 @@
+/* Main header: user selector + total count */
+.recordings-container .main-header {
+    margin-bottom: 25px;
+}
+
+.recordings-container .main-header > * {
+    display: inline-block;
+    margin-right: 25px;
+    vertical-align: top;
+}
+
+.recordings-container .main-header .select-header {
+    color: #606069;
+    margin-bottom: 5px;
+}
+
+.recordings-container .main-header .user-selector,
+.recordings-container .main-header .chosen-container {
+    width: 300px !important;
+}
+
+.recordings-container .main-header .counts-wrapper {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    margin-top: 24px;
+}
+
+.recordings-container .main-header .counts-wrapper .count-wrapper {
+    color: #606069;
+    display: inline-block;
+    height: 26px;
+    padding: 5px 10px;
+    text-align: center;
+    min-width: 65px;
+}
+
+.recordings-container .main-header .counts-wrapper .count-wrapper .count-text {
+    font-size: 24px;
+    color: #333;
+    padding-left: 7px;
+}
+
+/* Action bar: selection controls */
+.recordings-container .action-bar .basic-actions {
+    line-height: 30px;
+}
+
+.recordings-container .action-bar .margin-left {
+    margin-left: 10px;
+}
+
+.recordings-container .action-bar .hidable {
+    display: inline-block;
+}
+
+.recordings-container .action-bar .hidable.hidden {
+    display: none;
+}
+
+.recordings-container .recordings-table .select-cell {
+    min-width: 20px !important;
+}
+
 .recordings-container .filter-by-date .date-ranges>* {
     margin: 0 10px 0 0;
     vertical-align: middle;

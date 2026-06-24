@@ -10,6 +10,16 @@
 	"endDate": "Date de fin",
 	"filter": "Filtrer",
 	"close": "Fermer",
+	"currentlyViewing": "Affichage actuel",
+	"allUsers": "Tous les utilisateurs",
+	"total": "Total",
+	"select": {
+		"tooltip": "Sélectionner des enregistrements",
+		"all": "Tout",
+		"none": "Aucun"
+	},
+	"deleteSelected": "Supprimer la sélection",
+	"confirmDeleteSelected": "Êtes-vous sûr de vouloir supprimer les enregistrements sélectionnés ?",
 	"recordingsTable": {
 		"direction": "Sens",
 		"from": "De",
@@ -42,7 +52,8 @@
 	"toasts": {
 		"accountSettingsSaved": "Paramètres d'enregistrement des appels du compte enregistrés !",
 		"settingsSaved": "Paramètres d'enregistrement des appels enregistrés !",
-		"recordingDeleted": "Enregistrement supprimé !"
+		"recordingDeleted": "Enregistrement supprimé !",
+		"recordingsDeleted": "Enregistrements supprimés !"
 	},
 	"errors": {
 		"getAccount": "Problème lors de la récupération des données du compte : ",
