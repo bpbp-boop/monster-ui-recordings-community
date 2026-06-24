@@ -1,8 +1,8 @@
 <div id="content-wrapper">
 	<form id="account-settings" class="form-horizontal">
-		<legend>External calls</legend>
+		<legend>{{i18n.accountSettings.externalCalls}}</legend>
 		<div class="control-group">
-			<label class="control-label" for="inbound-offnet">Inbound External</label>
+			<label class="control-label" for="inbound-offnet">{{i18n.accountSettings.inboundExternal}}</label>
 			<div class="controls">
 				{{#monsterSwitch }}
 				<input id="inbound-offnet" name="inbound-offnet" type="checkbox" {{#if inbound_external_enabled}}checked{{/if}}/>
@@ -11,7 +11,7 @@
 		</div>
 
 		<div class="control-group">
-			<label class="control-label" for="outbound-offnet">Outbound External</label>
+			<label class="control-label" for="outbound-offnet">{{i18n.accountSettings.outboundExternal}}</label>
 			<div class="controls">
 				{{#monsterSwitch }}
 				<input id="outbound-offnet" name="outbound-offnet" type="checkbox" {{#if outbound_external_enabled}}checked{{/if}} />
@@ -20,9 +20,9 @@
 		</div>
 
 
-		<legend>Internal calls</legend>
+		<legend>{{i18n.accountSettings.internalCalls}}</legend>
 		<div class="control-group">
-			<label class="control-label" for="inbound-onnet">Inbound Internal</label>
+			<label class="control-label" for="inbound-onnet">{{i18n.accountSettings.inboundInternal}}</label>
 			<div class="controls">
 				{{#monsterSwitch }}
 				<input id="inbound-onnet" name="inbound-onnet" type="checkbox" {{#if inbound_internal_enabled}}checked{{/if}} />
@@ -31,7 +31,7 @@
 		</div>
 
 		<div class="control-group">
-			<label class="control-label" for="outbound-onnet">Outbound Internal</label>
+			<label class="control-label" for="outbound-onnet">{{i18n.accountSettings.outboundInternal}}</label>
 			<div class="controls">
 				{{#monsterSwitch }}
 				<input id="outbound-onnet" name="outbound-onnet" type="checkbox" {{#if outbound_internal_enabled}}checked{{/if}} />
@@ -41,7 +41,7 @@
 
 		<div class="control-group">
 			<div class="controls">
-				<button type="button" class="monster-button-success save">Save</button>
+				<button type="button" class="monster-button-success save">{{i18n.accountSettings.save}}</button>
 			</div>
 		</div>
 	</form>
