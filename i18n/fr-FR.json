@@ -38,6 +38,9 @@
 		"outboundExternal": "Sortant externe",
 		"inboundInternal": "Entrant interne",
 		"outboundInternal": "Sortant interne",
+		"recordingEmails": "Envoi des enregistrements par e-mail",
+		"emailRecordings": "Envoyer les nouveaux enregistrements par e-mail",
+		"emailAddress": "Adresse destinataire",
 		"save": "Enregistrer"
 	},
 	"endpointSettings": {
@@ -58,6 +61,8 @@
 	"errors": {
 		"getAccount": "Problème lors de la récupération des données du compte : ",
 		"updateAccount": "Problème lors de la mise à jour des données du compte : ",
+		"getWebhook": "Problème lors de la récupération du webhook : ",
+		"updateWebhook": "Problème lors de la mise à jour du webhook e-mail : ",
 		"getUsers": "Problème lors de la récupération des utilisateurs",
 		"getDevices": "Problème lors de la récupération des appareils",
 		"updateUser": "Problème lors de la mise à jour de l'utilisateur",

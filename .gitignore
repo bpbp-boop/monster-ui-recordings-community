@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local receiver config (holds the API key + SMTP credentials)
+receiver/config.ini
+
+# Editor / OS cruft
+*.swp
+.DS_Store

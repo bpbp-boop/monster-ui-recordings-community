@@ -1,0 +1,32 @@
+; Copy to /etc/recordings-email/config.ini and chmod 600 (holds the KAZOO API
+; key and SMTP credentials). All values shown are examples.
+
+[server]
+listen_host = 0.0.0.0
+listen_port = 8080
+; must match the path in the webhook URI configured by the Monster UI app
+path = /recordings-email
+
+[kazoo]
+; base URL of the KAZOO crossbar API, including the version segment
+api_base = https://kazoo.example.com:8443/v2
+; account API key (Account Settings -> API key in SmartPBX, or `sup`)
+api_key = REPLACE_WITH_ACCOUNT_API_KEY
+
+[email]
+; default recipient if the webhook custom_data does not carry one
+to = archive@example.com
+from = recordings@example.com
+subject_prefix = New call recording
+
+[smtp]
+host = smtp.example.com
+port = 587
+username = recordings@example.com
+password = REPLACE_WITH_SMTP_PASSWORD
+; true => STARTTLS on submission ports, or implicit TLS when port = 465
+use_tls = true
+
+[security]
+; shared secret; must equal appFlags.emailWebhook.token in the Monster UI app
+token = REPLACE_WITH_SHARED_SECRET

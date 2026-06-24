@@ -18,6 +18,13 @@ define(function (require) {
 			recordings: {
 				maxRange: 31,
 				defaultRange: 7,
+			},
+			// Operator config for the "email recordings" feature. The receiver URI
+			// must point at the deployed Python webhook receiver (see receiver/).
+			emailWebhook: {
+				name: 'recordings-community-email',
+				receiverUri: 'https://CHANGE-ME.example.com/recordings-email',
+				token: 'CHANGE-ME-shared-secret'
 			}
 		},
 
@@ -48,6 +55,23 @@ define(function (require) {
 			'recordings-community.device.update': {
 				'url': 'accounts/{accountId}/devices/{deviceId}',
 				'verb': 'PATCH'
+			},
+			// Crossbar convention: PUT creates on a collection, POST updates by id
+			'recordings-community.webhooks.list': {
+				'url': 'accounts/{accountId}/webhooks',
+				'verb': 'GET'
+			},
+			'recordings-community.webhooks.create': {
+				'url': 'accounts/{accountId}/webhooks',
+				'verb': 'PUT'
+			},
+			'recordings-community.webhooks.update': {
+				'url': 'accounts/{accountId}/webhooks/{webhookId}',
+				'verb': 'POST'
+			},
+			'recordings-community.webhooks.delete': {
+				'url': 'accounts/{accountId}/webhooks/{webhookId}',
+				'verb': 'DELETE'
 			}
 		},
 
@@ -117,7 +141,23 @@ define(function (require) {
 				args = pArgs || {},
 				parent = args.container || $('#recordings-community_app_container .app-content-wrapper');
 
-			self.getAccount(function (account) {
+			// fetch the account doc and the current email webhook in parallel so the
+			// toggle state can be derived from whether our webhook exists
+			monster.parallel({
+				account: function (cb) {
+					self.getAccount(function (account) {
+						cb(null, account);
+					});
+				},
+				emailWebhook: function (cb) {
+					self.getEmailWebhook(function (webhook) {
+						cb(null, webhook);
+					});
+				}
+			}, function (err, results) {
+				var account = results.account,
+					emailWebhook = results.emailWebhook;
+
 				var inbound_external_enabled = false;
 				var inbound_internal_enabled = false;
 				var outbound_external_enabled = false;
@@ -148,6 +188,9 @@ define(function (require) {
 
 						inbound_internal_enabled: inbound_internal_enabled,
 						outbound_internal_enabled: outbound_internal_enabled,
+
+						email_enabled: !!emailWebhook,
+						email_address: emailWebhook ? emailWebhook.email : '',
 					}
 				}));
 
@@ -178,6 +221,11 @@ define(function (require) {
 					};
 
 					self.updateAccount(settings);
+
+					// reconcile the email webhook from the toggle + address field.
+					// state is derived purely from the webhook's existence, so toggle
+					// ON creates/updates it and toggle OFF deletes it.
+					self.reconcileEmailWebhook(emailWebhook, formData['email-recordings'], formData['email-address']);
 
 					monster.ui.toast({
 						type: 'success',
@@ -230,6 +278,111 @@ define(function (require) {
 				},
 				error: function (response) {
 					monster.ui.alert('error', self.i18n.active().errors.updateAccount + JSON.stringify(response));
+				}
+			});
+		},
+
+		// Looks up "our" email webhook (matched by name) and returns
+		// { id, email } if it exists, otherwise null. The presence of this
+		// webhook is the single source of truth for whether emailing is enabled.
+		getEmailWebhook: function (callback) {
+			var self = this,
+				name = self.appFlags.emailWebhook.name;
+
+			monster.request({
+				resource: 'recordings-community.webhooks.list',
+				data: {
+					accountId: self.accountId
+				},
+				success: function (response) {
+					var webhook = _.find(response.data, function (hook) {
+						return hook.name === name;
+					});
+
+					callback && callback(webhook ? {
+						id: webhook.id,
+						email: webhook.custom_data ? webhook.custom_data.email : ''
+					} : null);
+				},
+				error: function (response) {
+					monster.ui.alert('error', self.i18n.active().errors.getWebhook + JSON.stringify(response));
+					callback && callback(null);
+				}
+			});
+		},
+
+		// Creates, updates, or deletes the email webhook based on the toggle state.
+		reconcileEmailWebhook: function (existing, enabled, email) {
+			var self = this,
+				flags = self.appFlags.emailWebhook;
+
+			if (!enabled) {
+				if (existing) {
+					self.deleteEmailWebhook(existing.id);
+				}
+				return;
+			}
+
+			var data = {
+				name: flags.name,
+				uri: flags.receiverUri,
+				http_verb: 'post',
+				hook: 'object',
+				// send a flat JSON body to the receiver
+				format: 'json',
+				retries: 3,
+				// For the object hook, KAZOO takes the type/action filters from
+				// custom_data (verified against KAZOO 4.3.140). custom_data is then
+				// merged into the event body, so the receiver also reads token/email
+				// from these same keys.
+				custom_data: {
+					type: 'call_recording',
+					action: 'doc_created',
+					email: email || '',
+					token: flags.token
+				}
+			};
+
+			if (existing) {
+				monster.request({
+					resource: 'recordings-community.webhooks.update',
+					data: {
+						accountId: self.accountId,
+						webhookId: existing.id,
+						data: data
+					},
+					success: function () {},
+					error: function (response) {
+						monster.ui.alert('error', self.i18n.active().errors.updateWebhook + JSON.stringify(response));
+					}
+				});
+			} else {
+				monster.request({
+					resource: 'recordings-community.webhooks.create',
+					data: {
+						accountId: self.accountId,
+						data: data
+					},
+					success: function () {},
+					error: function (response) {
+						monster.ui.alert('error', self.i18n.active().errors.updateWebhook + JSON.stringify(response));
+					}
+				});
+			}
+		},
+
+		deleteEmailWebhook: function (webhookId) {
+			var self = this;
+
+			monster.request({
+				resource: 'recordings-community.webhooks.delete',
+				data: {
+					accountId: self.accountId,
+					webhookId: webhookId
+				},
+				success: function () {},
+				error: function (response) {
+					monster.ui.alert('error', self.i18n.active().errors.updateWebhook + JSON.stringify(response));
 				}
 			});
 		},
