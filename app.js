@@ -452,7 +452,6 @@ define(function (require) {
 
 				monster.ui.tooltips(template);
 				monster.ui.footable(template.find('.footable'));
-				monster.ui.chosen(template.find('.select-user'));
 
 				self.recordingsInitDatePicker(parent, template);
 				self.bindRecordings(parent, template);
@@ -463,6 +462,10 @@ define(function (require) {
 							.empty()
 							.append(template)
 							.fadeIn();
+
+						// chosen must be initialised once the select is in the DOM,
+						// otherwise the rendered options come out blank
+						monster.ui.chosen(template.find('.select-user'));
 
 						self.displayRecordings(parent);
 					});
