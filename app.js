@@ -61,6 +61,10 @@ define(function (require) {
 				'url': 'accounts/{accountId}/webhooks',
 				'verb': 'GET'
 			},
+			'recordings-community.webhooks.get': {
+				'url': 'accounts/{accountId}/webhooks/{webhookId}',
+				'verb': 'GET'
+			},
 			'recordings-community.webhooks.create': {
 				'url': 'accounts/{accountId}/webhooks',
 				'verb': 'PUT'
@@ -295,14 +299,35 @@ define(function (require) {
 					accountId: self.accountId
 				},
 				success: function (response) {
-					var webhook = _.find(response.data, function (hook) {
+					var summary = _.find(response.data, function (hook) {
 						return hook.name === name;
 					});
 
-					callback && callback(webhook ? {
-						id: webhook.id,
-						email: webhook.custom_data ? webhook.custom_data.email : ''
-					} : null);
+					if (!summary) {
+						callback && callback(null);
+						return;
+					}
+
+					// the list view omits custom_data, so fetch the full webhook
+					// doc by id to read the configured email address back
+					monster.request({
+						resource: 'recordings-community.webhooks.get',
+						data: {
+							accountId: self.accountId,
+							webhookId: summary.id
+						},
+						success: function (full) {
+							var hook = full.data;
+							callback && callback({
+								id: hook.id,
+								email: hook.custom_data ? hook.custom_data.email : ''
+							});
+						},
+						error: function (response) {
+							monster.ui.alert('error', self.i18n.active().errors.getWebhook + JSON.stringify(response));
+							callback && callback({ id: summary.id, email: '' });
+						}
+					});
 				},
 				error: function (response) {
 					monster.ui.alert('error', self.i18n.active().errors.getWebhook + JSON.stringify(response));
