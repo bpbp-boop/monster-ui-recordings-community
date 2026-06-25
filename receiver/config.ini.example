@@ -2,7 +2,7 @@
 ; key and SMTP credentials). All values shown are examples.
 
 [server]
-listen_host = 0.0.0.0
+listen_host = 127.0.0.1
 listen_port = 8080
 ; must match the path in the webhook URI configured by the Monster UI app
 path = /recordings-email
@@ -22,24 +22,16 @@ subject_prefix = New call recording
 [smtp]
 host = smtp.example.com
 port = 587
-; username and password are OPTIONAL: omit (or leave blank) for an internal
-; smarthost that does not require authentication. When username is empty the
-; receiver connects and sends without logging in.
-username = recordings@example.com
-password = REPLACE_WITH_SMTP_PASSWORD
+; username and password are optional
+;username = recordings@example.com
+;password = REPLACE_WITH_SMTP_PASSWORD
 ; true => STARTTLS on submission ports, or implicit TLS when port = 465
 use_tls = true
 
 [security]
 ; Shared secret echoed back in the webhook body; the receiver rejects requests
-; whose token does not match. NOTE: this is NOT a strong secret -- it lives in
-; the Monster UI app.js (appFlags.emailWebhook.token), which is a static file
-; served to the browser, so treat it as low-value. The real control is to
-; restrict who can reach this receiver (see allowed_ips below and/or a host
-; firewall rule limiting the port to the KAZOO cluster).
 token = REPLACE_WITH_SHARED_SECRET
 ; Optional comma-separated allowlist of source IPs (the KAZOO cluster nodes).
 ; When set, requests from any other peer are rejected with 403. Leave blank to
-; allow all. If the receiver sits behind a reverse proxy, every request appears
-; to come from the proxy -- restrict at the proxy/firewall instead.
+; allow all.
 allowed_ips =

@@ -4,6 +4,7 @@ Monster UI Application: Provides an app to view and download call recordings for
 ## Screenshots
 ![recordings-list](metadata/screenshots/recordings1.PNG?raw=true)
 ![settings](metadata/screenshots/recordings2.PNG?raw=true)
+![settings](metadata/screenshots/recordings3.PNG?raw=true)
 
 ## Installation
 
