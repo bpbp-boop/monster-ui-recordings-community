@@ -38,6 +38,9 @@
 		"outboundExternal": "Uitgaand extern",
 		"inboundInternal": "Inkomend intern",
 		"outboundInternal": "Uitgaand intern",
+		"recordingEmails": "Opnames e-mailen",
+		"emailRecordings": "Nieuwe opnames e-mailen",
+		"emailAddress": "Verzenden naar adres",
 		"save": "Opslaan"
 	},
 	"endpointSettings": {
@@ -58,6 +61,8 @@
 	"errors": {
 		"getAccount": "Probleem bij het ophalen van accountgegevens: ",
 		"updateAccount": "Probleem bij het bijwerken van accountgegevens: ",
+		"getWebhook": "Probleem bij het ophalen van webhookgegevens: ",
+		"updateWebhook": "Probleem bij het bijwerken van e-mailwebhook: ",
 		"getUsers": "Probleem bij het ophalen van gebruikers",
 		"getDevices": "Probleem bij het ophalen van apparaten",
 		"updateUser": "Probleem bij het bijwerken van gebruiker",

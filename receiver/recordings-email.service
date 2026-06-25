@@ -1,0 +1,20 @@
+[Unit]
+Description=KAZOO call-recording email receiver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=recordings-email
+Group=recordings-email
+ExecStart=/usr/bin/python3.6 /opt/recordings-email/receiver.py --config /etc/recordings-email/config.ini
+Restart=on-failure
+RestartSec=5
+# hardening: the service only needs to read its config and reach the network
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

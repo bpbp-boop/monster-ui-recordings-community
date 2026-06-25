@@ -38,6 +38,9 @@
 		"outboundExternal": "Outbound External",
 		"inboundInternal": "Inbound Internal",
 		"outboundInternal": "Outbound Internal",
+		"recordingEmails": "Recording emails",
+		"emailRecordings": "Email new recordings",
+		"emailAddress": "Send to address",
 		"save": "Save"
 	},
 	"endpointSettings": {
@@ -58,6 +61,8 @@
 	"errors": {
 		"getAccount": "Issue getting account data: ",
 		"updateAccount": "Issue updating account data: ",
+		"getWebhook": "Issue getting webhook data: ",
+		"updateWebhook": "Issue updating email webhook: ",
 		"getUsers": "Issue getting users",
 		"getDevices": "Issue getting devices",
 		"updateUser": "Issue updating user",
