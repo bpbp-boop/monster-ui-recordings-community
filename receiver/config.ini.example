@@ -12,6 +12,11 @@ path = /recordings-email
 api_base = https://kazoo.example.com:8443/v2
 ; account API key (Account Settings -> API key in SmartPBX, or `sup`)
 api_key = REPLACE_WITH_ACCOUNT_API_KEY
+; With S3/external storage the audio is uploaded just after the webhook fires,
+; so the media can 404 for a few seconds. Retry the download this many times,
+; waiting this many seconds between tries, before giving up.
+;download_retries = 6
+;download_retry_delay = 5.0
 
 [email]
 ; default recipient if the webhook custom_data does not carry one

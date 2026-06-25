@@ -55,6 +55,11 @@ def download_recording(account_id, recording_id, auth_token):
     "Accept: audio/mpeg" yields the binary media (any other value returns the
     JSON doc or an empty body). It then serves the bytes in whatever format the
     recording was stored as, so we read the real Content-Type off the response.
+
+    With S3/external storage the audio is uploaded to the backend just after the
+    doc is saved (which is when the webhook fires), so the media briefly 404s
+    until that upload lands. Retry a bounded number of times on 404 to ride out
+    that window; any other status fails immediately.
     """
     url = "{base}/accounts/{account}/recordings/{rec}".format(
         base=CONFIG["kazoo_api_base"].rstrip("/"),
@@ -65,9 +70,19 @@ def download_recording(account_id, recording_id, auth_token):
         url, method="GET",
         headers={"X-Auth-Token": auth_token, "Accept": "audio/mpeg"},
     )
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        content_type = resp.headers.get("Content-Type", "audio/mpeg")
-        return resp.read(), content_type
+    attempts = max(1, CONFIG["download_retries"])
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                content_type = resp.headers.get("Content-Type", "audio/mpeg")
+                return resp.read(), content_type
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404 or attempt == attempts:
+                raise
+            log.info("media for %s not available yet (404), retry %d/%d in %ss",
+                     recording_id, attempt, attempts - 1,
+                     CONFIG["download_retry_delay"])
+            time.sleep(CONFIG["download_retry_delay"])
 
 
 def fetch_recording_doc(account_id, recording_id, auth_token):
@@ -352,6 +367,12 @@ def load_config(path):
         "path": parser.get("server", "path", fallback="/recordings-email"),
         "kazoo_api_base": parser.get("kazoo", "api_base"),
         "kazoo_api_key": parser.get("kazoo", "api_key"),
+        # with S3/external storage the audio is uploaded just after the doc is
+        # saved (and the webhook fires), so the media can 404 for a few seconds
+        "download_retries": parser.getint(
+            "kazoo", "download_retries", fallback=6),
+        "download_retry_delay": parser.getfloat(
+            "kazoo", "download_retry_delay", fallback=5.0),
         "email_to": parser.get("email", "to", fallback=""),
         "email_from": parser.get("email", "from"),
         "email_subject_prefix": parser.get(
