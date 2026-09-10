@@ -16,7 +16,6 @@ define(function (require) {
 
 		appFlags: {
 			recordings: {
-				maxRange: 31,
 				defaultRange: 7,
 			},
 			// Operator config for the "email recordings" feature. The receiver URI
@@ -965,15 +964,57 @@ define(function (require) {
 				fromDate = dates.from,
 				toDate = dates.to;
 
-			var optionsDatePicker = {
-				container: template,
-				range: self.appFlags.recordings.maxRange
-			};
+			var startInput = template.find('#startDate'),
+				endInput = template.find('#endDate'),
+				presetInput = template.find('#date_range_preset');
 
-			monster.ui.initRangeDatepicker(optionsDatePicker);
+			monster.ui.datepicker(template.find('#startDate, #endDate'), {
+				beforeShow: function (input) {
+					return {
+						minDate: input.id === 'endDate' ? startInput.datepicker('getDate') : new Date(2011, 0, 1),
+						maxDate: monster.util.getDefaultRangeDates(1).to
+					};
+				},
+				onSelect: function () {
+					presetInput.val('');
+					if (startInput.datepicker('getDate') > endInput.datepicker('getDate')) {
+						endInput.datepicker('option', { minDate: startInput.datepicker('getDate'), maxDate: monster.util.getDefaultRangeDates(1).to });
+						endInput.datepicker('setDate', startInput.datepicker('getDate'));
+					}
+				}
+			});
 
-			template.find('#startDate').datepicker('setDate', fromDate);
-			template.find('#endDate').datepicker('setDate', toDate);
+			startInput.datepicker('setDate', fromDate);
+			endInput.datepicker('setDate', toDate);
+			presetInput.val(String(self.appFlags.recordings.defaultRange));
+
+			template.find('#startDate, #endDate').on('change', function () {
+				presetInput.val('');
+			});
+
+			presetInput.on('change', function () {
+				var preset = presetInput.val(),
+					end = monster.util.getDefaultRangeDates(1).to,
+					start = new Date(end.getTime());
+
+				if (!preset) {
+					return;
+				}
+				if (preset === '6months' || preset === '1year') {
+					var day = start.getDate();
+					start.setDate(1);
+					start.setMonth(start.getMonth() - (preset === '6months' ? 6 : 12));
+					start.setDate(Math.min(day, new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate()));
+				} else {
+					// Include today in the requested number of calendar days.
+					start.setDate(start.getDate() - Number(preset) + 1);
+				}
+				// Clear bounds cached when either calendar was last opened.
+				startInput.datepicker('option', { minDate: new Date(2011, 0, 1), maxDate: end });
+				endInput.datepicker('option', { minDate: start, maxDate: end });
+				startInput.datepicker('setDate', start);
+				endInput.datepicker('setDate', end);
+			});
 
 			template.find('.apply-filter').on('click', function (e) {
 				self.displayRecordings(parent);

@@ -6,6 +6,15 @@
 		"users": "Users",
 		"devices": "Devices"
 	},
+	"dateRangePresets": {
+		"label": "Date range",
+		"custom": "Custom range",
+		"last7Days": "Last 7 days",
+		"last30Days": "Last 30 days",
+		"last90Days": "Last 90 days",
+		"last6Months": "Last 6 months",
+		"lastYear": "Last year"
+	},
 	"startDate": "Start date",
 	"endDate": "End date",
 	"filter": "Filter",

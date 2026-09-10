@@ -6,6 +6,15 @@
 		"users": "Gebruikers",
 		"devices": "Apparaten"
 	},
+	"dateRangePresets": {
+		"label": "Datumbereik",
+		"custom": "Aangepast bereik",
+		"last7Days": "Afgelopen 7 dagen",
+		"last30Days": "Afgelopen 30 dagen",
+		"last90Days": "Afgelopen 90 dagen",
+		"last6Months": "Afgelopen 6 maanden",
+		"lastYear": "Afgelopen jaar"
+	},
 	"startDate": "Startdatum",
 	"endDate": "Einddatum",
 	"filter": "Filteren",
