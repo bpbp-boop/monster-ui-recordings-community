@@ -826,60 +826,70 @@ define(function (require) {
 			});
 		},
 
-		recordingGetRows: function (filters, userId, callback, startKey, continueData) {
-			var self = this;
+		recordingGetRows: function (filters, userId, callback) {
+			var self = this,
+				// Stay below Crossbar's 2,682,000-second request limit, including DST.
+				chunkSeconds = 30 * 24 * 60 * 60,
+				rangeStart = filters.created_from,
+				chunkEnd = filters.created_to,
+				chunkStart = Math.max(rangeStart, chunkEnd - chunkSeconds + 1),
+				recordings = [];
 
-			continueData = continueData || [];
-
-			if (typeof startKey !== 'undefined') {
-				filters.start_key = startKey;
-			}
-
-			var onSuccess = function (response) {
-				var mergedData = $.merge(continueData, response.data);
-
-				if (response.next_start_key && startKey !== response.next_start_key) {
-					self.recordingGetRows(filters, userId, callback, response.next_start_key, mergedData);
-					return;
+			function fetchPage(startKey) {
+				var requestFilters = $.extend({}, filters, {
+					created_from: chunkStart,
+					created_to: chunkEnd
+				});
+				delete requestFilters.start_key;
+				if (typeof startKey !== 'undefined') {
+					requestFilters.start_key = startKey;
 				}
 
-				var recordings = mergedData;
-				var formattedRecordings = self.formatRecordings(recordings);
-				var $rows = $(self.getTemplate({
-					name: 'recordings-rows',
-					data: {
-						recordings: formattedRecordings,
-					}
-				}));
-
-				callback && callback($rows, recordings);
-			};
-
-			// list a single user's recordings when one is selected, otherwise
-			// fall back to the account-wide listing ("all users")
-			if (userId && userId !== 'all') {
-				monster.request({
-					resource: 'recordings-community.recordings.listByUser',
+				var request = {
+					resource: userId && userId !== 'all'
+						? 'recordings-community.recordings.listByUser' : 'recordings.list',
 					data: {
 						accountId: self.accountId,
-						userId: userId,
-						filters: filters
+						filters: requestFilters
 					},
-					success: onSuccess,
+					success: function (response) {
+						$.merge(recordings, response.data);
+						if (response.next_start_key && startKey !== response.next_start_key) {
+							fetchPage(response.next_start_key);
+							return;
+						}
+						if (chunkStart > rangeStart) {
+							// Inclusive bounds: the next chunk ends one second before this one.
+							chunkEnd = chunkStart - 1;
+							chunkStart = Math.max(rangeStart, chunkEnd - chunkSeconds + 1);
+							fetchPage();
+							return;
+						}
+
+						recordings.sort(function (a, b) {
+							return (b.start_time || b.start || 0) - (a.start_time || a.start || 0);
+						});
+						var $rows = $(self.getTemplate({
+							name: 'recordings-rows',
+							data: { recordings: self.formatRecordings(recordings) }
+						}));
+						callback && callback($rows, recordings);
+					},
 					error: function () {
+						// Do not show an incomplete range as a successful result.
 						callback && callback($(), []);
 					}
-				});
-			} else {
-				self.callApi({
-					resource: 'recordings.list',
-					data: {
-						accountId: self.accountId,
-						filters: filters
-					},
-					success: onSuccess
-				});
+				};
+
+				if (userId && userId !== 'all') {
+					request.data.userId = userId;
+					monster.request(request);
+				} else {
+					self.callApi(request);
+				}
 			}
+
+			fetchPage();
 		},
 
 		bulkDeleteRecordings: function (recordingIds, callback) {
