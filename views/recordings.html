@@ -47,6 +47,14 @@
 
             <div class="filter-by-date">
                 <div class="date-ranges">
+                    <select id="date_range_preset" aria-label="{{i18n.dateRangePresets.label}}">
+                        <option value="">{{i18n.dateRangePresets.custom}}</option>
+                        <option value="7">{{i18n.dateRangePresets.last7Days}}</option>
+                        <option value="30">{{i18n.dateRangePresets.last30Days}}</option>
+                        <option value="90">{{i18n.dateRangePresets.last90Days}}</option>
+                        <option value="6months">{{i18n.dateRangePresets.last6Months}}</option>
+                        <option value="1year">{{i18n.dateRangePresets.lastYear}}</option>
+                    </select>
                     <span>{{i18n.startDate}}</span>
                     <input id="startDate" type="text" class="date-filter filter-from">
                     <i class="fa fa-calendar"></i>
